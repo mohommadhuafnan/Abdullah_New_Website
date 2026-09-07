@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
+    --font-arabic: 'Amiri', serif;
+    
+    /* Core palette */
+    --color-primary-navy: #0F172A;
+    --color-secondary-navy: #1E293B;
+    --color-muted-slate: #475569;
+    --color-light-slate: #64748B;
+    
+    --color-emerald-primary: #0F6B52;
+    --color-emerald-deep: #064E3B;
+    --color-emerald-light: #ECFDF5;
+    --color-emerald-accent: #10B981;
+    
+    --color-gold-primary: #C8A951;
+    --color-gold-dark: #9A7B2C;
+    --color-gold-light: #FEF9C3;
+    
+    --color-bg-white: #FFFFFF;
+    --color-bg-soft: #F8FAFC;
+    --color-bg-alt: #F5F7F6;
+    --color-border-subtle: #E2E8F0;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-white);
+    color: var(--color-primary-navy);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-editorial {
+    font-family: var(--font-serif);
+  }
+
+  /* Accessibility Visible Focus Rings */
+  *:focus-visible {
+    outline: 3px solid #0F6B52 !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Glassmorphism utilities */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 35px -10px rgba(15, 107, 82, 0.12), 0 8px 16px -6px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 107, 82, 0.25);
+}
+
+.glass-badge-gold {
+  background: linear-gradient(135deg, rgba(254, 249, 195, 0.8), rgba(254, 240, 138, 0.6));
+  border: 1px solid rgba(200, 169, 81, 0.4);
+  color: #854D0E;
+}
+
+.glass-badge-emerald {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.9), rgba(209, 250, 229, 0.7));
+  border: 1px solid rgba(15, 107, 82, 0.3);
+  color: #064E3B;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C8A951 0%, #9A7B2C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-gradient-text {
+  background: linear-gradient(135deg, #0F6B52 0%, #064E3B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Accessible High Contrast Mode */
+body.high-contrast {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+body.high-contrast * {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+  border-color: #FFFF00 !important;
+  box-shadow: none !important;
+}
+
+body.high-contrast a,
+body.high-contrast button {
+  color: #FFFF00 !important;
+  text-decoration: underline !important;
+}
+
+body.high-contrast input,
+body.high-contrast textarea,
+body.high-contrast select {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FFFFFF !important;
+}
+
+/* Dyslexia Friendly Mode */
+body.dyslexia-font {
+  font-family: 'Comic Sans MS', 'Verdana', sans-serif !important;
+  letter-spacing: 0.08em;
+  word-spacing: 0.15em;
+  line-height: 1.8;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
