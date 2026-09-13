@@ -33,13 +33,12 @@ import { YoutubeIcon } from '../../components/common/SocialIcons';
 export const HomePage: React.FC = () => {
   const { profile, about, qualifications, awards, courses, videos, gallery, socialLinks, announce } = useCMS();
 
-  // Typewriter animation state for hero headline
+  // Typewriter animation state for hero headline (compact to strictly prevent line 3 wrapping)
   const phrases = [
     'Faith That Inspires.',
-    'Knowledge That Empowers.',
     'Voices That Resonate.',
-    'Wisdom That Enlightens.',
-    'Truth That Overcomes.',
+    'Wisdom That Guides.',
+    'Knowledge That Empowers.',
   ];
   const [typedText, setTypedText] = useState('');
   const [phraseIdx, setPhraseIdx] = useState(0);
@@ -160,21 +159,21 @@ export const HomePage: React.FC = () => {
               <span>AL HAFEEL A. A. M. ABDULLAH</span>
             </motion.div>
 
-            {/* Grand Editorial Headline with Dynamic Typewriter Animation */}
+            {/* Grand Editorial Headline with Dynamic Typewriter Animation (Locked to 2 Lines) */}
             <motion.h1
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-black text-white leading-[1.08] tracking-tight drop-shadow-xl min-h-[2.15em] sm:min-h-[2.2em]"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[62px] font-serif font-black text-white leading-[1.12] tracking-tight drop-shadow-xl min-h-[2.25em]"
             >
-              Words That Inspire. <br />
-              <span className="bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 bg-clip-text text-transparent">
+              <span className="block whitespace-nowrap">Words That Inspire.</span>
+              <span className="inline-flex items-baseline whitespace-nowrap bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 bg-clip-text text-transparent">
                 {typedText}
+                <span
+                  aria-hidden="true"
+                  className="inline-block w-[3px] sm:w-[4px] h-[0.78em] bg-amber-400 ml-1.5 align-baseline animate-pulse shadow-sm shadow-amber-400"
+                />
               </span>
-              <span
-                aria-hidden="true"
-                className="inline-block w-[3px] sm:w-[4px] h-[0.82em] bg-amber-400 ml-1.5 align-baseline animate-pulse shadow-sm shadow-amber-400"
-              />
             </motion.h1>
 
             {/* Clean 1-Line Role Descriptor */}
