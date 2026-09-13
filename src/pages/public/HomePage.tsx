@@ -20,7 +20,9 @@ import {
   ChevronRight,
   Volume2,
   VolumeX,
-  RotateCcw
+  RotateCcw,
+  Send,
+  Users
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { SEO } from '../../components/common/SEO';
@@ -33,11 +35,11 @@ export const HomePage: React.FC = () => {
 
   // Typewriter animation state for hero headline
   const phrases = [
+    'Faith That Inspires.',
     'Knowledge That Empowers.',
     'Voices That Resonate.',
     'Wisdom That Enlightens.',
     'Truth That Overcomes.',
-    'Faith That Inspires.',
   ];
   const [typedText, setTypedText] = useState('');
   const [phraseIdx, setPhraseIdx] = useState(0);
@@ -140,23 +142,21 @@ export const HomePage: React.FC = () => {
           className="absolute inset-0 w-full h-full object-cover object-[70%_center] md:object-[65%_center] lg:object-[60%_center] xl:object-center select-none"
         />
 
-        {/* Cinematic Subtle Gradient Overlays (preserves the office & plant aesthetic) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 md:via-slate-950/50 to-transparent pointer-events-none" />
-        <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-slate-950/70 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
-        <div className="sm:hidden absolute inset-0 bg-slate-950/60 pointer-events-none" />
+        {/* Subtle Top & Bottom Gradient for Content Contrast */}
+        <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-slate-950/60 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-slate-950/70 to-transparent pointer-events-none" />
 
         {/* Minimal Hero Content Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-28 sm:pt-32 pb-14 sm:pb-16 lg:pt-36 lg:pb-20 w-full">
-          <div className="max-w-xl lg:max-w-2xl space-y-5 text-left">
-            {/* Minimal Status Tag */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-28 sm:pt-32 pb-14 sm:pb-16 lg:pt-36 lg:pb-16 w-full flex flex-col justify-between min-h-[90vh]">
+          <div className="max-w-xl lg:max-w-2xl space-y-4 text-left">
+            {/* Pill Tag with emerald dot */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/80 border border-emerald-500/40 text-emerald-300 text-xs font-bold tracking-widest uppercase backdrop-blur-md shadow-lg"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/60 border border-emerald-500/40 text-emerald-300 text-xs font-bold tracking-widest uppercase backdrop-blur-md shadow-lg"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
               <span>AL HAFEEL A. A. M. ABDULLAH</span>
             </motion.div>
 
@@ -168,7 +168,7 @@ export const HomePage: React.FC = () => {
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-black text-white leading-[1.08] tracking-tight drop-shadow-xl min-h-[2.15em] sm:min-h-[2.2em]"
             >
               Words That Inspire. <br />
-              <span className="bg-gradient-to-r from-amber-300 via-emerald-300 to-amber-200 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 bg-clip-text text-transparent">
                 {typedText}
               </span>
               <span
@@ -177,12 +177,12 @@ export const HomePage: React.FC = () => {
               />
             </motion.h1>
 
-            {/* Clean 1-Line Role Descriptor (No walls of text) */}
+            {/* Clean 1-Line Role Descriptor */}
             <motion.p
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-sm sm:text-base md:text-lg text-slate-300 font-medium tracking-wide flex flex-wrap items-center gap-x-2 gap-y-1 drop-shadow"
+              className="text-xs sm:text-sm md:text-base text-slate-200 font-semibold tracking-wide flex flex-wrap items-center gap-x-2.5 gap-y-1"
             >
               <span>Journalist</span>
               <span className="text-emerald-400 font-bold">•</span>
@@ -193,7 +193,17 @@ export const HomePage: React.FC = () => {
               <span>Hafiz-ul-Qur'an</span>
             </motion.p>
 
-            {/* Sleek Action Buttons */}
+            {/* Mission Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="text-xs sm:text-sm text-slate-300/90 max-w-lg leading-relaxed pt-1"
+            >
+              Spreading knowledge, strengthening faith and creating positive change through media and education.
+            </motion.p>
+
+            {/* Sleek Action Buttons (Matched to Mock) */}
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -203,10 +213,10 @@ export const HomePage: React.FC = () => {
               <Link
                 to="/journey"
                 onClick={() => announce('Navigating to Professional Journey')}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-xl shadow-emerald-950/60 hover:shadow-emerald-600/30 transition-all flex items-center gap-2 text-xs sm:text-sm focus:ring-4 focus:ring-amber-400"
+                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold rounded-full shadow-xl shadow-emerald-950/60 hover:shadow-emerald-500/30 transition-all flex items-center gap-2.5 text-xs sm:text-sm focus:ring-4 focus:ring-emerald-400"
               >
-                <span>Explore Journey</span>
-                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                <Send className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Explore My Journey</span>
               </Link>
 
               <button
@@ -216,31 +226,75 @@ export const HomePage: React.FC = () => {
                     setSelectedVideo(firstVid);
                   }
                 }}
-                className="px-5 py-3 bg-slate-900/85 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-700/80 backdrop-blur-md shadow-lg transition-all flex items-center gap-2 text-xs sm:text-sm focus:ring-4 focus:ring-emerald-500 cursor-pointer"
+                className="px-6 py-3 bg-slate-950/60 hover:bg-slate-900 text-white font-bold rounded-full border border-slate-700/80 backdrop-blur-md shadow-lg transition-all flex items-center gap-2.5 text-xs sm:text-sm focus:ring-4 focus:ring-emerald-500 cursor-pointer"
               >
-                <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full border border-white/40 flex items-center justify-center">
                   <Play className="w-2.5 h-2.5 text-white fill-white ml-0.5" aria-hidden="true" />
                 </div>
                 <span>Watch My Work</span>
               </button>
-
-              {/* YouTube Channel Badge */}
-              <a
-                href={
-                  socialLinks.find((s) => s.platform === 'youtube')?.url ||
-                  'https://youtube.com/@islamictvmedia_abdullah?si=ZGYZWdd-UBXzrqBH'
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-3 bg-red-600/20 hover:bg-red-600/30 text-red-200 border border-red-500/30 font-bold rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-xs group"
-              >
-                <YoutubeIcon className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
-                <span>@islamictvmedia_abdullah</span>
-                <span className="text-amber-400 text-[11px]">• 18.3K Subs</span>
-                <ExternalLink className="w-3 h-3 text-slate-400 ml-0.5" />
-              </a>
             </motion.div>
           </div>
+
+          {/* Bottom Feature Dock (4 Cards matched to design mock) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-8 pt-4 w-full max-w-xl lg:max-w-2xl"
+          >
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {/* Card 1: Media Presenter */}
+              <Link
+                to="/media"
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+              >
+                <Radio className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-white block leading-tight">Media Presenter</span>
+                <span className="text-[10px] text-slate-400 block">On TV & Digital</span>
+              </Link>
+
+              {/* Card 2: Islamic Educator */}
+              <Link
+                to="/quran-classes"
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+              >
+                <BookOpen className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-white block leading-tight">Islamic Educator</span>
+                <span className="text-[10px] text-slate-400 block">Guiding Hearts</span>
+              </Link>
+
+              {/* Card 3: Journalist */}
+              <Link
+                to="/journey"
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+              >
+                <Users className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-white block leading-tight">Journalist</span>
+                <span className="text-[10px] text-slate-400 block">Telling Real Stories</span>
+              </Link>
+
+              {/* Card 4: Hafiz-ul-Qur'an */}
+              <Link
+                to="/qualifications"
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+              >
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-white block leading-tight">Hafiz-ul-Qur'an</span>
+                <span className="text-[10px] text-slate-400 block">Quran in Life</span>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right Callout: "Knowledge Builds Better Tomorrows" Calligraphy */}
+        <div className="hidden xl:block absolute right-8 bottom-32 pointer-events-none text-right">
+          <p className="font-serif italic text-amber-200/80 text-sm font-semibold tracking-wide">
+            Knowledge<br />
+            <span className="text-white text-base">Builds</span><br />
+            <span className="text-emerald-400 text-lg font-bold">Better</span><br />
+            <span className="text-emerald-300 text-sm">Tomorrows</span>
+          </p>
         </div>
       </section>
 

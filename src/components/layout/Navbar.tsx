@@ -8,7 +8,13 @@ import {
   ChevronDown,
   GraduationCap,
   Award,
-  Image
+  Image,
+  Home as HomeIcon,
+  User,
+  Compass,
+  PlayCircle,
+  FileText,
+  Send
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 
@@ -118,53 +124,57 @@ export const Navbar: React.FC = () => {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                `px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
                   isActive
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 shadow-inner font-extrabold backdrop-blur-md'
-                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-emerald-800/80 text-white border border-emerald-500/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`
               }
             >
-              Home
+              <HomeIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Home</span>
             </NavLink>
 
             <NavLink
               to="/about"
               className={({ isActive }) =>
-                `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                `px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 shadow-inner font-extrabold backdrop-blur-md'
-                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-emerald-800/80 text-white border border-emerald-500/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`
               }
             >
-              About
+              <User className="w-3.5 h-3.5 text-slate-400" />
+              <span>About</span>
             </NavLink>
 
             <NavLink
               to="/journey"
               className={({ isActive }) =>
-                `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                `px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 shadow-inner font-extrabold backdrop-blur-md'
-                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-emerald-800/80 text-white border border-emerald-500/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`
               }
             >
-              Journey
+              <Compass className="w-3.5 h-3.5 text-slate-400" />
+              <span>Journey</span>
             </NavLink>
 
             <NavLink
               to="/media"
               className={({ isActive }) =>
-                `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                `px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 shadow-inner font-extrabold backdrop-blur-md'
-                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-emerald-800/80 text-white border border-emerald-500/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`
               }
             >
-              Media & TV
+              <PlayCircle className="w-3.5 h-3.5 text-slate-400" />
+              <span>Media & TV</span>
             </NavLink>
 
             {/* Portfolio & Credentials Dropdown */}
@@ -179,15 +189,16 @@ export const Navbar: React.FC = () => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   isPortfolioActive
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 shadow-inner font-extrabold backdrop-blur-md'
-                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-emerald-800/80 text-white border border-emerald-500/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`}
               >
+                <FileText className="w-3.5 h-3.5 text-slate-400" />
                 <span>Credentials</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  className={`w-3 h-3 transition-transform duration-200 ${
                     dropdownOpen ? 'rotate-180 text-emerald-300' : 'text-slate-400'
                   }`}
                   aria-hidden="true"
@@ -239,10 +250,10 @@ export const Navbar: React.FC = () => {
             <NavLink
               to="/quran-classes"
               className={({ isActive }) =>
-                `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                `px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 shadow-inner font-extrabold backdrop-blur-md'
-                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-emerald-800/80 text-white border border-emerald-500/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`
               }
             >
@@ -251,15 +262,16 @@ export const Navbar: React.FC = () => {
             </NavLink>
           </nav>
 
-          {/* Dedicated Action CTA: Apple-style Glass Button */}
+          {/* Dedicated Action CTA: Pill Button with Send Icon */}
           <div className="hidden sm:flex items-center gap-3 shrink-0">
             <Link
               to="/contact"
               onClick={() => announce('Navigating to Contact page')}
-              className="px-4 sm:px-5 py-2.5 bg-emerald-600/80 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-950/60 border border-emerald-400/30 backdrop-blur-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2 focus:ring-4 focus:ring-amber-400"
+              className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-950/60 hover:shadow-emerald-500/30 transition-all flex items-center gap-2 focus:ring-4 focus:ring-emerald-400 cursor-pointer"
             >
-              <Phone className="w-3.5 h-3.5 text-amber-300" aria-hidden="true" />
+              <Send className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Contact & Inquiries</span>
+              <span className="ml-0.5 text-xs">→</span>
             </Link>
           </div>
 
