@@ -235,18 +235,18 @@ export const HomePage: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* Bottom Feature Dock (4 Cards matched to design mock) */}
+          {/* Bottom Feature Dock (4 Cards without outer background layer) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-8 pt-4 w-full max-w-xl lg:max-w-2xl"
+            className="mt-8 pt-2 w-full max-w-xl lg:max-w-2xl"
           >
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
               {/* Card 1: Media Presenter */}
               <Link
                 to="/media"
-                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+                className="p-3 sm:p-3.5 rounded-2xl bg-black/25 hover:bg-black/40 border border-white/10 hover:border-emerald-500/40 backdrop-blur-md transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer shadow-lg"
               >
                 <Radio className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-bold text-white block leading-tight">Media Presenter</span>
@@ -256,7 +256,7 @@ export const HomePage: React.FC = () => {
               {/* Card 2: Islamic Educator */}
               <Link
                 to="/quran-classes"
-                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+                className="p-3 sm:p-3.5 rounded-2xl bg-black/25 hover:bg-black/40 border border-white/10 hover:border-emerald-500/40 backdrop-blur-md transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer shadow-lg"
               >
                 <BookOpen className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-bold text-white block leading-tight">Islamic Educator</span>
@@ -266,7 +266,7 @@ export const HomePage: React.FC = () => {
               {/* Card 3: Journalist */}
               <Link
                 to="/journey"
-                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+                className="p-3 sm:p-3.5 rounded-2xl bg-black/25 hover:bg-black/40 border border-white/10 hover:border-emerald-500/40 backdrop-blur-md transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer shadow-lg"
               >
                 <Users className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-bold text-white block leading-tight">Journalist</span>
@@ -276,7 +276,7 @@ export const HomePage: React.FC = () => {
               {/* Card 4: Hafiz-ul-Qur'an */}
               <Link
                 to="/qualifications"
-                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-emerald-500/30 transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer"
+                className="p-3 sm:p-3.5 rounded-2xl bg-black/25 hover:bg-black/40 border border-white/10 hover:border-emerald-500/40 backdrop-blur-md transition-all text-center flex flex-col items-center justify-center space-y-1.5 group cursor-pointer shadow-lg"
               >
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-bold text-white block leading-tight">Hafiz-ul-Qur'an</span>
