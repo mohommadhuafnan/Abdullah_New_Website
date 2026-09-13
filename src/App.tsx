@@ -2,9 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CMSProvider, useCMS } from './context/CMSContext';
 
-// Common Components
 import { SkipToContent } from './components/common/SkipToContent';
-import { AccessibilityToolbar } from './components/common/AccessibilityToolbar';
+import { WhatsAppFloatingButton } from './components/common/WhatsAppFloatingButton';
 import { AriaLiveAnnouncer } from './components/common/AriaLiveAnnouncer';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -56,13 +55,16 @@ const ScrollToTop: React.FC = () => {
 
 // Public Layout wrapper
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { pathname } = useLocation();
+  const isHomePage = pathname === '/';
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <SkipToContent />
       <Navbar />
-      <div className="flex-1">{children}</div>
+      <div className={`flex-1 ${isHomePage ? '' : 'pt-20'}`}>{children}</div>
       <Footer />
-      <AccessibilityToolbar />
+      <WhatsAppFloatingButton />
     </div>
   );
 };

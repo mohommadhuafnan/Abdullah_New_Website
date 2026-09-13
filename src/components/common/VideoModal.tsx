@@ -33,7 +33,18 @@ export const VideoModal: React.FC<VideoModalProps> = ({
   if (!isOpen) return null;
 
   // Extract clean video ID if available
-  const embedId = videoId || (youtubeUrl.includes('v=') ? youtubeUrl.split('v=')[1]?.split('&')[0] : 'dQw4w9WgXcQ');
+  let embedId = videoId;
+  if (!embedId || embedId === 'dQw4w9WgXcQ') {
+    if (youtubeUrl.includes('v=')) {
+      embedId = youtubeUrl.split('v=')[1]?.split('&')[0] || '7fqZvAI2w2c';
+    } else if (youtubeUrl.includes('youtu.be/')) {
+      embedId = youtubeUrl.split('youtu.be/')[1]?.split('?')[0] || '7fqZvAI2w2c';
+    } else if (youtubeUrl.includes('/shorts/')) {
+      embedId = youtubeUrl.split('/shorts/')[1]?.split('?')[0] || '7fqZvAI2w2c';
+    } else {
+      embedId = '7fqZvAI2w2c';
+    }
+  }
 
   return (
     <div
@@ -56,9 +67,9 @@ export const VideoModal: React.FC<VideoModalProps> = ({
           {/* Responsive Video Container */}
           <div className="relative pb-[56.25%] h-0 overflow-hidden bg-black">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${embedId}?autoplay=1&rel=0`}
+              src={`https://www.youtube-nocookie.com/embed/${embedId}?autoplay=1&enablejsapi=1&rel=0&playsinline=1`}
               title={title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               className="absolute top-0 left-0 w-full h-full border-0"
             />

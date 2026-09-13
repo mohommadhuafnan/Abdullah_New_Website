@@ -43,7 +43,25 @@ const STORAGE_KEYS = {
 export const CMSService = {
   getProfile(): Profile {
     const data = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    return data ? JSON.parse(data) : initialProfile;
+    if (!data) return initialProfile;
+    try {
+      const parsed: Profile = JSON.parse(data);
+      let updated = false;
+      if (parsed.heroVideoUrl?.includes('dQw4w9WgXcQ')) {
+        parsed.heroVideoUrl = 'https://www.youtube.com/watch?v=7fqZvAI2w2c';
+        updated = true;
+      }
+      if (!parsed.heroImage || parsed.heroImage === '/assets/hero_portrait.jpg') {
+        parsed.heroImage = '/assets/hero_executive_bg.png';
+        updated = true;
+      }
+      if (updated) {
+        this.saveProfile(parsed);
+      }
+      return parsed;
+    } catch {
+      return initialProfile;
+    }
   },
   saveProfile(profile: Profile): void {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
@@ -91,7 +109,19 @@ export const CMSService = {
 
   getVideos(): VideoItem[] {
     const data = localStorage.getItem(STORAGE_KEYS.VIDEOS);
-    return data ? JSON.parse(data) : initialVideos;
+    if (!data) return initialVideos;
+    try {
+      const parsed: VideoItem[] = JSON.parse(data);
+      // Migrate if old placeholder videos with RickRoll exist
+      const hasOldPlaceholders = parsed.some((v) => v.videoId === 'dQw4w9WgXcQ' || v.youtubeUrl?.includes('dQw4w9WgXcQ'));
+      if (hasOldPlaceholders || parsed.length === 0) {
+        this.saveVideos(initialVideos);
+        return initialVideos;
+      }
+      return parsed;
+    } catch {
+      return initialVideos;
+    }
   },
   saveVideos(videos: VideoItem[]): void {
     localStorage.setItem(STORAGE_KEYS.VIDEOS, JSON.stringify(videos));
@@ -107,7 +137,19 @@ export const CMSService = {
 
   getSocialLinks(): SocialLink[] {
     const data = localStorage.getItem(STORAGE_KEYS.SOCIAL);
-    return data ? JSON.parse(data) : initialSocialLinks;
+    if (!data) return initialSocialLinks;
+    try {
+      const parsed: SocialLink[] = JSON.parse(data);
+      const yt = parsed.find((s) => s.platform === 'youtube');
+      if (yt && (!yt.url.includes('_abdullah') || yt.handle === '@islamictvmedia')) {
+        yt.url = 'https://youtube.com/@islamictvmedia_abdullah?si=ZGYZWdd-UBXzrqBH';
+        yt.handle = '@islamictvmedia_abdullah';
+        this.saveSocialLinks(parsed);
+      }
+      return parsed;
+    } catch {
+      return initialSocialLinks;
+    }
   },
   saveSocialLinks(social: SocialLink[]): void {
     localStorage.setItem(STORAGE_KEYS.SOCIAL, JSON.stringify(social));
@@ -115,7 +157,17 @@ export const CMSService = {
 
   getSettings(): SiteSettings {
     const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? JSON.parse(data) : initialSettings;
+    if (!data) return initialSettings;
+    try {
+      const parsed: SiteSettings = JSON.parse(data);
+      if (parsed.heroVideoUrl?.includes('dQw4w9WgXcQ')) {
+        parsed.heroVideoUrl = 'https://www.youtube.com/watch?v=7fqZvAI2w2c';
+        this.saveSettings(parsed);
+      }
+      return parsed;
+    } catch {
+      return initialSettings;
+    }
   },
   saveSettings(settings: SiteSettings): void {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));

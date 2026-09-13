@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -18,15 +18,55 @@ import {
   Share2,
   ExternalLink,
   ChevronRight,
-  ShieldCheck
+  Volume2,
+  VolumeX,
+  RotateCcw
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { SEO } from '../../components/common/SEO';
 import { LightboxModal } from '../../components/common/LightboxModal';
 import { VideoModal } from '../../components/common/VideoModal';
+import { YoutubeIcon } from '../../components/common/SocialIcons';
 
 export const HomePage: React.FC = () => {
-  const { profile, about, qualifications, awards, courses, videos, gallery, announce } = useCMS();
+  const { profile, about, qualifications, awards, courses, videos, gallery, socialLinks, announce } = useCMS();
+
+  // Typewriter animation state for hero headline
+  const phrases = [
+    'Knowledge That Empowers.',
+    'Voices That Resonate.',
+    'Wisdom That Enlightens.',
+    'Truth That Overcomes.',
+    'Faith That Inspires.',
+  ];
+  const [typedText, setTypedText] = useState('');
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentPhrase = phrases[phraseIdx];
+    const typingSpeed = isDeleting ? 35 : 75;
+
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        if (typedText.length < currentPhrase.length) {
+          setTypedText(currentPhrase.slice(0, typedText.length + 1));
+        } else {
+          // Pause at full word
+          setTimeout(() => setIsDeleting(true), 2200);
+        }
+      } else {
+        if (typedText.length > 0) {
+          setTypedText(currentPhrase.slice(0, typedText.length - 1));
+        } else {
+          setIsDeleting(false);
+          setPhraseIdx((prev) => (prev + 1) % phrases.length);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [typedText, isDeleting, phraseIdx]);
 
   // State for modals
   const [selectedImage, setSelectedImage] = useState<{
@@ -41,6 +81,13 @@ export const HomePage: React.FC = () => {
     youtubeUrl: string;
     videoId: string;
   } | null>(null);
+
+  // Auto-play looping video state for "Watch My Work" section
+  const publishedVideos = videos.filter((v) => v.status === 'published');
+  const [activeLoopVideoIdx, setActiveLoopVideoIdx] = useState(0);
+  const [isLoopMuted, setIsLoopMuted] = useState(true);
+
+  const activeLoopVideo = publishedVideos[activeLoopVideoIdx] || publishedVideos[0];
 
   const primaryAward = awards.find((a) => a.id === 'award_social_tv_2025') || awards[0];
   const primaryCourse = courses[0];
@@ -76,179 +123,122 @@ export const HomePage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 1. HERO SECTION */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* 1. HERO SECTION (FULL SCREEN CINEMATIC EXECUTIVE BACKGROUND) */}
+      {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* 1. HERO SECTION (FULL-SCREEN CINEMATIC MINIMAL LUXURY) */}
+      {/* ========================================================================= */}
       <section
         aria-label="Introduction and Hero"
-        className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-emerald-50/20 pt-8 pb-20 sm:pt-16 sm:pb-28 border-b border-slate-100"
+        className="relative min-h-[92vh] lg:min-h-screen w-full flex items-center overflow-hidden bg-slate-950 text-white border-b border-slate-800/80"
       >
-        {/* Subtle geometric backdrop */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-amber-100/30 blur-3xl pointer-events-none" />
+        {/* Full-Screen Background Image */}
+        <img
+          src={profile.heroImage || '/assets/hero_executive_bg.png'}
+          alt="Al Hafeel A. A. M. Abdullah - Executive Studio"
+          className="absolute inset-0 w-full h-full object-cover object-[70%_center] md:object-[65%_center] lg:object-[60%_center] xl:object-center select-none"
+        />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* Left Column: Headline, Bio & CTAs */}
+        {/* Cinematic Subtle Gradient Overlays (preserves the office & plant aesthetic) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 md:via-slate-950/50 to-transparent pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-slate-950/70 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
+        <div className="sm:hidden absolute inset-0 bg-slate-950/60 pointer-events-none" />
+
+        {/* Minimal Hero Content Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-28 sm:pt-32 pb-14 sm:pb-16 lg:pt-36 lg:pb-20 w-full">
+          <div className="max-w-xl lg:max-w-2xl space-y-5 text-left">
+            {/* Minimal Status Tag */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="lg:col-span-7 space-y-6 text-left"
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/80 border border-emerald-500/40 text-emerald-300 text-xs font-bold tracking-widest uppercase backdrop-blur-md shadow-lg"
             >
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-900 text-xs sm:text-sm font-bold tracking-wide shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                <span>JOURNALIST • MEDIA PRESENTER • ISLAMIC EDUCATOR</span>
-              </div>
-
-              {/* Large Editorial Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-black text-slate-900 leading-[1.15] tracking-tight">
-                Words That Inspire. <br />
-                <span className="emerald-gradient-text">Knowledge That Empowers.</span>
-              </h1>
-
-              {/* Subheading / Tagline */}
-              <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-2xl font-sans">
-                {profile.tagline}
-              </p>
-
-              {/* Verified Highlight Pills */}
-              <div className="flex flex-wrap gap-2.5 pt-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 shadow-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-                  Hafiz-ul-Qur'an
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 shadow-xs">
-                  <Layers className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-                  Braille in 4 Languages
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 shadow-xs">
-                  <Award className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" />
-                  Social TV Award–2025
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 shadow-xs">
-                  <Smartphone className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-                  TalkBack Accessibility Expert
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-4 flex flex-wrap items-center gap-4">
-                <Link
-                  to="/journey"
-                  onClick={() => announce('Navigating to Professional Journey')}
-                  className="px-7 py-3.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-900/20 transition-all flex items-center gap-2 text-sm focus:ring-4 focus:ring-amber-400"
-                >
-                  <span>Explore My Journey</span>
-                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </Link>
-
-                <button
-                  onClick={() => {
-                    const firstVid = videos[0];
-                    if (firstVid) {
-                      setSelectedVideo(firstVid);
-                    }
-                  }}
-                  className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-xl border border-slate-300 shadow-sm hover:shadow-md transition-all flex items-center gap-2 text-sm focus:ring-4 focus:ring-emerald-700 cursor-pointer"
-                >
-                  <Play className="w-4 h-4 text-emerald-700 fill-emerald-700" aria-hidden="true" />
-                  <span>Watch My Work</span>
-                </button>
-
-                <Link
-                  to="/quran-classes"
-                  onClick={() => announce('Navigating to Quran Classes')}
-                  className="px-6 py-3.5 bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold rounded-xl border border-amber-300 shadow-xs transition-all flex items-center gap-2 text-sm focus:ring-4 focus:ring-amber-400"
-                >
-                  <BookOpen className="w-4 h-4 text-amber-700" aria-hidden="true" />
-                  <span>Join Quran Classes</span>
-                </Link>
-              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>AL HAFEEL A. A. M. ABDULLAH</span>
             </motion.div>
 
-            {/* Right Column: Layered Editorial Portrait & Floating Badges */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="lg:col-span-5 relative flex justify-center"
+            {/* Grand Editorial Headline with Dynamic Typewriter Animation */}
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-black text-white leading-[1.08] tracking-tight drop-shadow-xl min-h-[2.15em] sm:min-h-[2.2em]"
             >
-              <div className="relative w-full max-w-md">
-                {/* Main Portrait Frame */}
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 group">
-                  <img
-                    src={profile.heroImage || '/assets/hero_portrait.jpg'}
-                    alt="Al Hafeel A. A. M. Abdullah - Journalist, Media Presenter, and Islamic Educator"
-                    className="w-full h-auto object-cover transform group-hover:scale-102 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+              Words That Inspire. <br />
+              <span className="bg-gradient-to-r from-amber-300 via-emerald-300 to-amber-200 bg-clip-text text-transparent">
+                {typedText}
+              </span>
+              <span
+                aria-hidden="true"
+                className="inline-block w-[3px] sm:w-[4px] h-[0.82em] bg-amber-400 ml-1.5 align-baseline animate-pulse shadow-sm shadow-amber-400"
+              />
+            </motion.h1>
 
-                  {/* Name Tag overlay on photo */}
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <span className="block font-serif text-xl font-bold">{profile.fullName}</span>
-                    <span className="text-xs text-amber-300 font-semibold tracking-wider uppercase">
-                      Journalist & Media Presenter
-                    </span>
-                  </div>
+            {/* Clean 1-Line Role Descriptor (No walls of text) */}
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-sm sm:text-base md:text-lg text-slate-300 font-medium tracking-wide flex flex-wrap items-center gap-x-2 gap-y-1 drop-shadow"
+            >
+              <span>Journalist</span>
+              <span className="text-emerald-400 font-bold">•</span>
+              <span>Media Presenter</span>
+              <span className="text-emerald-400 font-bold">•</span>
+              <span>Islamic Educator</span>
+              <span className="text-emerald-400 font-bold">•</span>
+              <span>Hafiz-ul-Qur'an</span>
+            </motion.p>
+
+            {/* Sleek Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="pt-2 flex flex-wrap items-center gap-3.5"
+            >
+              <Link
+                to="/journey"
+                onClick={() => announce('Navigating to Professional Journey')}
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-xl shadow-emerald-950/60 hover:shadow-emerald-600/30 transition-all flex items-center gap-2 text-xs sm:text-sm focus:ring-4 focus:ring-amber-400"
+              >
+                <span>Explore Journey</span>
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+
+              <button
+                onClick={() => {
+                  const firstVid = videos[0];
+                  if (firstVid) {
+                    setSelectedVideo(firstVid);
+                  }
+                }}
+                className="px-5 py-3 bg-slate-900/85 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-700/80 backdrop-blur-md shadow-lg transition-all flex items-center gap-2 text-xs sm:text-sm focus:ring-4 focus:ring-emerald-500 cursor-pointer"
+              >
+                <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
+                  <Play className="w-2.5 h-2.5 text-white fill-white ml-0.5" aria-hidden="true" />
                 </div>
+                <span>Watch My Work</span>
+              </button>
 
-                {/* Floating Award Badge Card */}
-                {primaryAward && (
-                  <div
-                    onClick={() =>
-                      setSelectedImage({
-                        imageUrl: primaryAward.plaqueImage,
-                        title: primaryAward.name,
-                        caption: primaryAward.venue,
-                        altText: primaryAward.citationText,
-                      })
-                    }
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setSelectedImage({
-                          imageUrl: primaryAward.plaqueImage,
-                          title: primaryAward.name,
-                          caption: primaryAward.venue,
-                          altText: primaryAward.citationText,
-                        });
-                      }
-                    }}
-                    aria-label="View Social TV Award 2025 Plaque"
-                    className="absolute -top-6 -left-6 sm:-left-8 glass-card p-3.5 rounded-2xl shadow-xl border border-amber-300/60 max-w-[220px] flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
-                      <Award className="w-6 h-6 text-amber-700" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-900 block">
-                        Featured Honor
-                      </span>
-                      <span className="text-xs font-bold text-slate-900 line-clamp-1">
-                        {primaryAward.name}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Floating Online Quran Madarsa Badge */}
-                <Link
-                  to="/quran-classes"
-                  className="absolute -bottom-6 -right-4 sm:-right-6 glass-card p-3.5 rounded-2xl shadow-xl border border-emerald-300/80 max-w-[240px] flex items-center gap-3 hover:scale-105 transition-transform"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0">
-                    <BookOpen className="w-5 h-5 text-emerald-800" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">
-                      Islamic TV Media
-                    </span>
-                    <span className="text-xs font-bold text-slate-900 block">
-                      Online Quran Madarsa (Ages 6-15)
-                    </span>
-                  </div>
-                </Link>
-              </div>
+              {/* YouTube Channel Badge */}
+              <a
+                href={
+                  socialLinks.find((s) => s.platform === 'youtube')?.url ||
+                  'https://youtube.com/@islamictvmedia_abdullah?si=ZGYZWdd-UBXzrqBH'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-3 bg-red-600/20 hover:bg-red-600/30 text-red-200 border border-red-500/30 font-bold rounded-xl backdrop-blur-md transition-all flex items-center gap-2 text-xs group"
+              >
+                <YoutubeIcon className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
+                <span>@islamictvmedia_abdullah</span>
+                <span className="text-amber-400 text-[11px]">• 18.3K Subs</span>
+                <ExternalLink className="w-3 h-3 text-slate-400 ml-0.5" />
+              </a>
             </motion.div>
           </div>
         </div>
@@ -694,34 +684,148 @@ export const HomePage: React.FC = () => {
       <section aria-label="Media and Video Showcase" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-emerald-800">
-                Broadcasting & Media
-              </span>
+            <div className="space-y-3 text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 border border-red-200 text-red-800 text-xs font-bold uppercase tracking-wider">
+                <YoutubeIcon className="w-3.5 h-3.5 text-red-600" />
+                <span>Islamic TV Media • @islamictvmedia_abdullah</span>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900">
                 Watch My Work
               </h2>
               <p className="text-sm sm:text-base text-slate-600 max-w-xl">
-                Selected broadcasting presentations, journalism features, and Islamic TV Media educational videos.
+                Official YouTube episodes, Quran Tajweed education, and inspirational Tamil presentations. Over 18,300+ subscribers worldwide.
               </p>
             </div>
-            <Link
-              to="/media"
-              className="inline-flex items-center gap-2 text-sm font-bold text-emerald-800 hover:text-emerald-950 underline"
-            >
-              <span>Explore All Media</span>
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <a
+                href={
+                  socialLinks.find((s) => s.platform === 'youtube')?.url ||
+                  'https://youtube.com/@islamictvmedia_abdullah?si=ZGYZWdd-UBXzrqBH'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
+              >
+                <span>YouTube Channel</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <Link
+                to="/media"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
+              >
+                <span>Media Player</span>
+                <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
 
+          {/* Continuous Auto-Playing Looping Video Theater Player */}
+          {activeLoopVideo && (
+            <div className="mb-10 rounded-3xl bg-slate-950 text-white p-4 sm:p-6 lg:p-8 border border-slate-800 shadow-2xl space-y-5">
+              {/* Theater Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/40 flex items-center justify-center shrink-0">
+                    <YoutubeIcon className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-serif font-bold text-base sm:text-lg text-white">Now Auto-Playing In Loop</span>
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        Live Stream / Loop
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Plays automatically on visit with infinite seamless loop
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsLoopMuted(!isLoopMuted)}
+                    className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white"
+                    title={isLoopMuted ? 'Unmute video audio' : 'Mute video audio'}
+                  >
+                    {isLoopMuted ? (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Unmute Audio</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Mute Audio</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveLoopVideoIdx((prev) => (prev + 1) % publishedVideos.length);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer text-slate-200"
+                    title="Switch to next video"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Next Video</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Looping IFrame (autoplay=1&loop=1&playlist=ID&mute=...) */}
+              <div className="relative pb-[56.25%] sm:pb-[48%] md:pb-[42%] h-0 rounded-2xl overflow-hidden bg-black shadow-inner border border-slate-800">
+                <iframe
+                  key={`${activeLoopVideo.videoId}-${isLoopMuted}`}
+                  src={`https://www.youtube-nocookie.com/embed/${activeLoopVideo.videoId}?autoplay=1&mute=${isLoopMuted ? '1' : '0'}&loop=1&playlist=${activeLoopVideo.videoId}&controls=1&rel=0&playsinline=1&modestbranding=1`}
+                  title={activeLoopVideo.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-0"
+                />
+              </div>
+
+              {/* Video Title & Quick Info */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-left">
+                <div className="space-y-1 max-w-2xl">
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                    {activeLoopVideo.category}
+                  </span>
+                  <h3 className="text-base sm:text-lg font-serif font-bold text-white leading-snug">
+                    {activeLoopVideo.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 line-clamp-2">
+                    {activeLoopVideo.description}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setSelectedVideo(activeLoopVideo)}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>Open Fullscreen Theater</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Video Selection Grid / Playlist */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {videos
-              .filter((v) => v.status === 'published')
-              .slice(0, 4)
-              .map((video) => (
+            {publishedVideos.slice(0, 4).map((video, idx) => {
+              const isCurrentPlaying = activeLoopVideo?.id === video.id;
+              return (
                 <div
                   key={video.id}
-                  className="glass-card rounded-2xl overflow-hidden group flex flex-col justify-between border border-slate-200 hover:shadow-xl transition-all"
+                  onClick={() => setActiveLoopVideoIdx(idx)}
+                  className={`glass-card rounded-2xl overflow-hidden group flex flex-col justify-between border transition-all text-left cursor-pointer ${
+                    isCurrentPlaying
+                      ? 'border-emerald-500 ring-2 ring-emerald-400/50 shadow-xl'
+                      : 'border-slate-200 hover:shadow-xl hover:border-slate-300'
+                  }`}
                 >
                   <div className="relative aspect-video overflow-hidden bg-slate-900">
                     <img
@@ -729,22 +833,28 @@ export const HomePage: React.FC = () => {
                       alt={video.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <button
-                      onClick={() => setSelectedVideo(video)}
-                      aria-label={`Play video: ${video.title}`}
-                      className="absolute inset-0 bg-slate-950/40 hover:bg-slate-950/60 flex items-center justify-center transition-colors cursor-pointer"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-emerald-800 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <Play className="w-5 h-5 fill-white ml-0.5" aria-hidden="true" />
-                      </div>
-                    </button>
+                    
+                    {/* Badge Overlay */}
+                    <div className="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/50 flex items-center justify-center transition-colors">
+                      {isCurrentPlaying ? (
+                        <div className="px-3 py-1.5 rounded-full bg-emerald-600/90 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg animate-pulse">
+                          <span className="w-2 h-2 rounded-full bg-white" />
+                          <span>Looping Now</span>
+                        </div>
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-slate-900/80 group-hover:bg-emerald-700 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-all">
+                          <Play className="w-4 h-4 fill-white ml-0.5" aria-hidden="true" />
+                        </div>
+                      )}
+                    </div>
+
                     <span className="absolute bottom-2 right-2 px-2 py-0.5 bg-slate-900/80 text-white text-[10px] font-bold rounded">
                       {video.category}
                     </span>
                   </div>
 
                   <div className="p-4 space-y-2 text-left">
-                    <h3 className="font-serif font-bold text-sm text-slate-900 line-clamp-2">
+                    <h3 className={`font-serif font-bold text-sm line-clamp-2 ${isCurrentPlaying ? 'text-emerald-800' : 'text-slate-900'}`}>
                       {video.title}
                     </h3>
                     <p className="text-xs text-slate-600 line-clamp-2">
@@ -754,14 +864,24 @@ export const HomePage: React.FC = () => {
 
                   <div className="p-4 pt-0">
                     <button
-                      onClick={() => setSelectedVideo(video)}
-                      className="w-full py-2 bg-slate-100 hover:bg-emerald-800 hover:text-white text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveLoopVideoIdx(idx);
+                      }}
+                      className={`w-full py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                        isCurrentPlaying
+                          ? 'bg-emerald-800 text-white'
+                          : 'bg-slate-100 hover:bg-emerald-800 hover:text-white text-slate-800'
+                      }`}
                     >
-                      Watch Video
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>{isCurrentPlaying ? 'Now Auto-Playing' : 'Switch & Play Loop'}</span>
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </div>
       </section>
