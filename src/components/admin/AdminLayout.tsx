@@ -53,8 +53,12 @@ export const AdminLayout: React.FC = () => {
       {/* Mobile Top App Bar */}
       <header className="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between border-b border-slate-800 sticky top-0 z-40">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-800 flex items-center justify-center font-bold text-amber-300 font-serif">
-            A
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-400/40 bg-slate-900 shrink-0">
+            <img
+              src="/assets/logo_emblem.jpg"
+              alt="Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <span className="font-serif font-bold text-sm block">Abdullah CMS</span>
@@ -92,8 +96,12 @@ export const AdminLayout: React.FC = () => {
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-800 border border-emerald-600 flex items-center justify-center text-amber-300 font-serif font-bold text-lg">
-              A
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-amber-400/40 bg-slate-900 shrink-0 shadow-sm">
+              <img
+                src="/assets/logo_emblem.jpg"
+                alt="Al Hafeel Abdullah Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="text-left">
               <span className="font-serif font-bold text-white text-base block leading-tight">

@@ -102,9 +102,13 @@ export const Navbar: React.FC = () => {
             aria-label="Al Hafeel A. A. M. Abdullah - Return to Homepage"
             className="flex items-center gap-3 group focus:outline-none focus:ring-4 focus:ring-amber-400 rounded-xl p-1 shrink-0"
           >
-            {/* Monogram emblem */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-700/90 to-emerald-950/90 flex items-center justify-center text-amber-300 font-serif font-black text-xl shadow-lg border border-amber-400/40 backdrop-blur-md group-hover:scale-105 transition-transform">
-              A
+            {/* Brand Logo Emblem */}
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden shadow-lg border border-amber-400/40 backdrop-blur-md group-hover:scale-105 transition-transform bg-slate-900 shrink-0">
+              <img
+                src="/assets/logo_emblem.jpg"
+                alt="Al Hafeel Abdullah Brand Emblem"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="text-left">
               <span className="font-serif text-lg sm:text-xl font-black text-white tracking-tight block leading-tight group-hover:text-emerald-300 transition-colors drop-shadow">

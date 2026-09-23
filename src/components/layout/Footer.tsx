@@ -80,8 +80,12 @@ export const Footer: React.FC = () => {
           {/* Col 1 & 2: Bio & Profile */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center text-amber-300 font-bold font-serif text-lg border border-amber-400/40">
-                A
+              <div className="w-11 h-11 rounded-full overflow-hidden border border-amber-400/40 shadow-md shrink-0 bg-slate-900">
+                <img
+                  src="/assets/logo_emblem.jpg"
+                  alt="Al Hafeel Abdullah Emblem Logo"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h3 className="font-serif text-xl font-bold text-white">{profile.fullName}</h3>
