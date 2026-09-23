@@ -1,13 +1,10 @@
 import crypto from 'node:crypto';
-import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const PRIMARY_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'mohommadhuafnan756@gmail.com').trim().toLowerCase();
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const ADMIN_EMAIL_FROM = process.env.ADMIN_EMAIL_FROM || 'onboarding@resend.dev';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'abdullah-secure-session-secret-key-2026';
 
 // SMTP Configuration (Gmail or standard SMTP)
@@ -16,9 +13,6 @@ const SMTP_PASS = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
 const SMTP_FROM = process.env.SMTP_FROM || (SMTP_USER ? `"Al Hafeel Abdullah Admin" <${SMTP_USER}>` : '');
-
-// Initialize Resend
-const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 // In-Memory Storage for Challenges & Sessions
 // Cleaned up every 5 minutes
@@ -130,14 +124,12 @@ const createSessionToken = (email) => {
   return token;
 };
 
-const RESEND_TEST_EMAIL = 'webcoder45@gmail.com';
-
 export const isAuthorizedAdmin = (email) => {
   const norm = normalizeEmail(email);
-  return norm === PRIMARY_ADMIN_EMAIL || norm === RESEND_TEST_EMAIL;
+  return norm === PRIMARY_ADMIN_EMAIL;
 };
 
-// Unified Email Dispatcher (SMTP / Nodemailer priority, Resend fallback)
+// Email Dispatcher (Direct SMTP via Nodemailer)
 export const dispatchOtpEmail = async ({ toEmail, otp, isResend = false }) => {
   const subject = isResend ? 'New Admin Verification Code' : 'Admin Login Verification Code';
   const html = `
@@ -167,7 +159,7 @@ export const dispatchOtpEmail = async ({ toEmail, otp, isResend = false }) => {
   `;
   const text = `Admin Login Verification\n\nYour administrator verification code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nIf you did not request this verification code, you can safely ignore this email.\nDo not share this code with anyone.`;
 
-  // 1. Priority: Nodemailer SMTP (Direct delivery to any email without domain verification)
+  // Dispatch via Nodemailer SMTP (e.g. Gmail App Password)
   if (SMTP_USER && SMTP_PASS) {
     try {
       const transporter = nodemailer.createTransport({
@@ -196,63 +188,16 @@ export const dispatchOtpEmail = async ({ toEmail, otp, isResend = false }) => {
       };
     } catch (smtpErr) {
       console.error('[AUTH ERROR] SMTP dispatch failed:', smtpErr?.message || smtpErr);
-      // Fall through to Resend if available
-    }
-  }
-
-  // 2. Secondary: Resend
-  if (resend) {
-    try {
-      const sendResult = await resend.emails.send({
-        from: ADMIN_EMAIL_FROM,
-        to: toEmail,
-        subject,
-        html,
-        text,
-      });
-
-      if (!sendResult.error) {
-        return {
-          success: true,
-          sentToAddress: toEmail,
-          deliveryMessage: `A verification code has been sent to ${toEmail}.`,
-        };
-      }
-
-      // If Resend test restriction: deliver to registered test address
-      if (sendResult.error.statusCode === 403) {
-        const fallbackResult = await resend.emails.send({
-          from: ADMIN_EMAIL_FROM,
-          to: 'webcoder45@gmail.com',
-          subject: `[Admin OTP for ${toEmail}] ${subject}`,
-          html,
-          text,
-        });
-
-        if (!fallbackResult.error) {
-          return {
-            success: true,
-            sentToAddress: 'webcoder45@gmail.com',
-            deliveryMessage: `Code dispatched to webcoder45@gmail.com (Resend test mode).`,
-          };
-        }
-      }
-
       return {
         success: false,
-        error: sendResult.error.message || 'Email delivery failed.',
-      };
-    } catch (resendErr) {
-      return {
-        success: false,
-        error: resendErr?.message || 'Email dispatch error.',
+        error: `SMTP delivery failed: ${smtpErr?.message || 'Check your SMTP credentials'}`,
       };
     }
   }
 
   return {
     success: false,
-    error: 'No email service configured. Please provide SMTP credentials in .env.',
+    error: 'Email service is not configured. Please set SMTP_USER and SMTP_PASS in your environment.',
   };
 };
 

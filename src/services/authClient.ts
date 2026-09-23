@@ -64,7 +64,7 @@ export const AuthClient = {
       if (!text || Object.keys(data).length === 0) {
         return {
           success: false,
-          message: 'Backend server is not active on this host. On Render, please create a "Web Service" (Node.js) instead of a "Static Site" so the secure server and Resend API can run.',
+          message: 'Backend server is not active on this host. On Render, please create a "Web Service" (Node.js) instead of a "Static Site" so the secure server and email service can run.',
           error: 'Backend server not running',
         };
       }

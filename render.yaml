@@ -7,10 +7,6 @@ services:
     envVars:
       - key: ADMIN_EMAIL
         value: mohommadhuafnan756@gmail.com
-      - key: RESEND_API_KEY
-        sync: false
-      - key: ADMIN_EMAIL_FROM
-        value: onboarding@resend.dev
       - key: SESSION_SECRET
         generateValue: true
       - key: SMTP_HOST
