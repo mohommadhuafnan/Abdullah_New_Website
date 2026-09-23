@@ -151,29 +151,43 @@ export const getSmtpTransporter = () => {
   const user = (process.env.SMTP_USER || '').trim();
   const pass = (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || '').replace(/\s+/g, '');
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const secure = port === 465;
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
 
   if (!user || !pass) return null;
 
   if (!cachedTransporter) {
-    cachedTransporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass },
-    });
+    if (host.includes('gmail.com')) {
+      cachedTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user, pass },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      });
+    } else {
+      cachedTransporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      });
+    }
   }
   return cachedTransporter;
 };
 
 export const sendAdminOtpEmail = async (email, otp) => {
+  const user = (process.env.SMTP_USER || '').trim();
+  const pass = (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || '').replace(/\s+/g, '');
   const transporter = getSmtpTransporter();
   if (!transporter) {
     throw new Error('Email service is not configured. Please set SMTP_USER and SMTP_PASSWORD.');
   }
 
-  const sender = process.env.SMTP_FROM || `"Admin Security System" <${process.env.SMTP_USER}>`;
+  const sender = process.env.SMTP_FROM || `"Admin Security System" <${user}>`;
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px 24px; background: #020617; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
@@ -193,13 +207,34 @@ export const sendAdminOtpEmail = async (email, otp) => {
 
   const text = `Hello,\n\nYour Admin Dashboard verification code is:\n\n${otp}\n\nThis code will expire in 5 minutes.\n\nDo not share this code with anyone.\n\nIf you did not request this code, you can safely ignore this email.\n\nRegards,\nAdmin Security System`;
 
-  await transporter.sendMail({
+  const mailOptions = {
     from: sender,
     to: email,
     subject: 'Admin Login Verification Code',
     html,
     text,
-  });
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.warn('[AUTH SMTP] Primary delivery attempt failed:', err?.message || err);
+    if (user && pass) {
+      console.log('[AUTH SMTP] Retrying via direct Gmail SSL (port 465)...');
+      const fallbackTransporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user, pass },
+        connectionTimeout: 10000,
+        socketTimeout: 15000,
+      });
+      await fallbackTransporter.sendMail(mailOptions);
+      cachedTransporter = fallbackTransporter;
+      return;
+    }
+    throw err;
+  }
 };
 
 // --------------------------------------------------------------------------
