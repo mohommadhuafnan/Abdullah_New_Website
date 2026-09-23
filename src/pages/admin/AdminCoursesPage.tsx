@@ -19,9 +19,11 @@ export const AdminCoursesPage: React.FC = () => {
     featured: true,
     status: 'published',
   });
+
   const [programAreasText, setProgramAreasText] = useState(
     (courseData.programAreas || []).join('\n')
   );
+
   const [saved, setSaved] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,7 +91,7 @@ export const AdminCoursesPage: React.FC = () => {
             />
           </div>
         </div>
-
+        
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="space-y-1.5">
             <label htmlFor="crs-age" className="block text-xs font-bold text-slate-700">

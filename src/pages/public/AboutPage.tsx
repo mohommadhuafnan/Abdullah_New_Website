@@ -34,7 +34,7 @@ export const AboutPage: React.FC = () => {
           <div className="lg:col-span-5">
             <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-100 bg-slate-50">
               <img
-                src={profile.profileImage || '/assets/hero_portrait.jpg'}
+                src={profile.profileImage || '/assets/Profile.jpeg'}
                 alt="Portrait of Al Hafeel A. A. M. Abdullah"
                 className="w-full h-auto object-cover"
               />

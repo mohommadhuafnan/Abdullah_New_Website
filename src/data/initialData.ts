@@ -22,7 +22,7 @@ export const initialProfile: Profile = {
   fullBio: `Al Hafeel A. A. M. Abdullah represents a rare and powerful synthesis of journalistic integrity, deep Islamic scholarship, and inspirational perseverance. As a Hafiz-ul-Qur'an with mastery in Braille across four languages (Tamil, Sinhala, English, and Arabic), he has transcended boundaries to become a resonant voice across radio, television, online media, and Islamic educational platforms.
 
 Abdullah's work encompasses investigative reporting, news delivery, studio presenting, youth coaching, and founding the "Islamic TV Media - Online Quran Madarsa" which nurtures students aged 6 to 15 across the globe in Quran recitation with Tajweed, Hadith memorization, public speaking, and noble character.`,
-  profileImage: '/assets/hero_portrait.jpg',
+  profileImage: '/assets/Profile.jpeg',
   heroImage: '/assets/hero_executive_bg.png',
   heroVideoUrl: 'https://www.youtube.com/watch?v=7fqZvAI2w2c',
   heroVideoEnabled: true,
@@ -413,7 +413,7 @@ export const initialGallery: GalleryItem[] = [
     title: 'Professional Broadcast Portrait',
     caption: 'Al Hafeel A. A. M. Abdullah in studio setting with broadcast microphone.',
     category: 'Personal Brand',
-    imageUrl: '/assets/hero_portrait.jpg',
+    imageUrl: '/assets/Profile.jpeg',
     altText: 'Editorial portrait of Al Hafeel A. A. M. Abdullah wearing formal navy blazer with broadcasting microphone',
     featured: true,
     displayOrder: 3,

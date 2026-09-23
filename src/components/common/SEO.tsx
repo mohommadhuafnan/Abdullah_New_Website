@@ -12,7 +12,7 @@ interface SEOProps {
 export const SEO: React.FC<SEOProps> = ({
   title,
   description,
-  image = '/assets/hero_portrait.jpg',
+  image = '/assets/Profile.jpeg',
   schema,
 }) => {
   const { profile, settings } = useCMS();
