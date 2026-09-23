@@ -35,9 +35,19 @@ import { AdminSocialPage } from './pages/admin/AdminSocialPage';
 import { AdminEnquiriesPage } from './pages/admin/AdminEnquiriesPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
-// Protected Route Guard
+// Protected Route Guard with Server Session Validation
 const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAdmin } = useCMS();
+  const { isAdmin, isAuthChecking } = useCMS();
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-3 text-white">
+        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-semibold text-slate-400">Verifying administrator session...</span>
+      </div>
+    );
+  }
+
   if (!isAdmin) {
     return <Navigate to="/admin/login" replace />;
   }

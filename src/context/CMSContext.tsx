@@ -14,6 +14,7 @@ import type {
   Enquiry
 } from '../types';
 import { CMSService } from '../services/cmsService';
+import { AuthClient } from '../services/authClient';
 
 interface CMSContextType {
   profile: Profile;
@@ -57,10 +58,15 @@ interface CMSContextType {
   updateEnquiryStatus: (id: string, status: Enquiry['status']) => void;
   deleteEnquiry: (id: string) => void;
   
-  // Auth
+  // Secure Email + OTP Auth
   isAdmin: boolean;
-  login: (password: string) => boolean;
-  logout: () => void;
+  adminEmail: string | null;
+  isAuthChecking: boolean;
+  requestOtp: (email: string) => Promise<{ success: boolean; message: string; challengeId?: string; maskedEmail?: string; expiresIn?: number; error?: string }>;
+  verifyOtp: (challengeId: string, otp: string) => Promise<{ success: boolean; message: string; error?: string }>;
+  resendOtp: (challengeId: string) => Promise<{ success: boolean; message: string; expiresIn?: number; error?: string }>;
+  logout: () => Promise<void>;
+  checkSession: () => Promise<boolean>;
   
   // Screen Reader & Live Accessibility
   liveMessage: string;
@@ -97,7 +103,24 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [socialLinks, setSocialLinksState] = useState<SocialLink[]>(() => CMSService.getSocialLinks());
   const [settings, setSettingsState] = useState<SiteSettings>(() => CMSService.getSettings());
   const [enquiries, setEnquiriesState] = useState<Enquiry[]>(() => CMSService.getEnquiries());
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => CMSService.getAuthStatus());
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+
+  // Validate server session on mount
+  useEffect(() => {
+    let isMounted = true;
+    AuthClient.checkSession().then((res) => {
+      if (isMounted) {
+        setIsAdmin(res.authenticated);
+        setAdminEmail(res.email || null);
+        setIsAuthChecking(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   
   // Accessibility State
   const [liveMessage, setLiveMessage] = useState<string>('');
@@ -332,21 +355,55 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     announce('Enquiry deleted');
   };
 
-  const login = (password: string): boolean => {
-    if (password === 'abdullah2026' || password === 'admin' || password === 'admin123') {
-      setIsAdmin(true);
-      CMSService.setAuthStatus(true);
-      announce('You are now signed in to the Abdullah website administration dashboard.', true);
-      return true;
+  const requestOtp = async (email: string) => {
+    const res = await AuthClient.requestOtp(email);
+    if (res.success) {
+      announce('Verification code sent to your email.');
+    } else {
+      announce(res.message, true);
     }
-    announce('Incorrect password. Please try again.', true);
-    return false;
+    return res;
   };
 
-  const logout = () => {
+  const resendOtp = async (challengeId: string) => {
+    const res = await AuthClient.resendOtp(challengeId);
+    if (res.success) {
+      announce('A new verification code has been sent.');
+    } else {
+      announce(res.message, true);
+    }
+    return res;
+  };
+
+  const verifyOtp = async (challengeId: string, otp: string) => {
+    const res = await AuthClient.verifyOtp(challengeId, otp);
+    if (res.success) {
+      setIsAdmin(true);
+      setAdminEmail(res.email || null);
+      announce('Authentication successful. Welcome to the admin dashboard.', true);
+      try {
+        confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+      } catch {
+        // Ignore
+      }
+    } else {
+      announce(res.message, true);
+    }
+    return res;
+  };
+
+  const logout = async () => {
+    await AuthClient.logout();
     setIsAdmin(false);
-    CMSService.setAuthStatus(false);
+    setAdminEmail(null);
     announce('You have been signed out from the admin panel.');
+  };
+
+  const checkSession = async () => {
+    const res = await AuthClient.checkSession();
+    setIsAdmin(res.authenticated);
+    setAdminEmail(res.email || null);
+    return res.authenticated;
   };
 
   const exportData = () => CMSService.exportAllData();
@@ -429,7 +486,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateEnquiryStatus,
         deleteEnquiry,
         isAdmin,
-        login,
+        adminEmail,
+        isAuthChecking,
+        requestOtp,
+        verifyOtp,
+        resendOtp,
+        checkSession,
         logout,
         liveMessage,
         isAssertive,

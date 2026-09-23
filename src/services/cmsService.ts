@@ -37,7 +37,6 @@ const STORAGE_KEYS = {
   SOCIAL: 'abdullah_cms_social',
   SETTINGS: 'abdullah_cms_settings',
   ENQUIRIES: 'abdullah_cms_enquiries',
-  AUTH: 'abdullah_cms_auth',
 };
 
 export const CMSService = {
@@ -243,12 +242,5 @@ export const CMSService = {
     localStorage.removeItem(STORAGE_KEYS.SOCIAL);
     localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     localStorage.removeItem(STORAGE_KEYS.ENQUIRIES);
-  },
-
-  getAuthStatus(): boolean {
-    return localStorage.getItem(STORAGE_KEYS.AUTH) === 'true';
-  },
-  setAuthStatus(isAuth: boolean): void {
-    localStorage.setItem(STORAGE_KEYS.AUTH, isAuth ? 'true' : 'false');
   }
 };
