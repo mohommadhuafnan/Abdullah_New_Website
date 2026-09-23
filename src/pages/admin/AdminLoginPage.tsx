@@ -48,8 +48,12 @@ export const AdminLoginPage: React.FC = () => {
 
         {/* Brand Header */}
         <div className="space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-800 border border-emerald-600 flex items-center justify-center text-amber-300 font-bold font-serif text-xl">
-            A
+          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-amber-400/40 bg-slate-900 shadow-md">
+            <img
+              src="/assets/logo_emblem.jpg"
+              alt="Al Hafeel Abdullah Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
             Admin Sign In
