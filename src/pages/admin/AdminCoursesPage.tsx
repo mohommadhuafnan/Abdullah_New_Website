@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Save, Check } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { SEO } from '../../components/common/SEO';
+import { ImageUploadInput } from '../../components/admin/ImageUploadInput';
 
 export const AdminCoursesPage: React.FC = () => {
   const { courses, updateCourses } = useCMS();
@@ -159,6 +160,16 @@ export const AdminCoursesPage: React.FC = () => {
             className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-700 outline-none font-sans"
           />
         </div>
+
+        {/* Madarsa Classroom Banner Image */}
+        <ImageUploadInput
+          id="crs-banner"
+          label="Madarsa Classroom Banner Image"
+          value={courseData.bannerImage || '/assets/islamic_tv_media_banner.jpg'}
+          onChange={(val) => setCourseData({ ...courseData, bannerImage: val })}
+          helpText="Banner photograph displayed on the Online Quran Madarsa page."
+          previewHeight="h-44"
+        />
 
         <div className="pt-4 border-t border-slate-100 flex justify-end">
           <button

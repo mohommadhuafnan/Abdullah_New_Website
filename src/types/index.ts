@@ -112,6 +112,7 @@ export interface Course {
   teacher: string;
   description: string;
   programAreas: string[];
+  bannerImage?: string;
   featured: boolean;
   status: ContentStatus;
 }

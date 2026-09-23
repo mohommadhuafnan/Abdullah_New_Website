@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, AlertCircle } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import type { GalleryItem } from '../../types';
 import { SEO } from '../../components/common/SEO';
+import { ImageUploadInput } from '../../components/admin/ImageUploadInput';
 
 export const AdminGalleryPage: React.FC = () => {
   const { gallery, addGalleryItem, updateGalleryItem, deleteGalleryItem, announce } = useCMS();
@@ -136,19 +137,15 @@ export const AdminGalleryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="gal-url" className="block text-xs font-bold text-slate-700">
-              Image URL / Asset Path <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="gal-url"
-              type="text"
-              required
-              value={formData.imageUrl}
-              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-700 outline-none"
-            />
-          </div>
+          <ImageUploadInput
+            id="gal-url"
+            label="Gallery Photograph"
+            required
+            value={formData.imageUrl}
+            onChange={(val) => setFormData({ ...formData, imageUrl: val })}
+            helpText="Upload a high-resolution photo from your device or specify an image URL."
+            previewHeight="h-48"
+          />
 
           {/* Accessible Alt-Text Input */}
           <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-1.5">

@@ -129,7 +129,7 @@ export const QuranClassesPage: React.FC = () => {
             <div className="lg:col-span-5">
               <div className="rounded-2xl overflow-hidden border-2 border-emerald-600 shadow-xl bg-emerald-950">
                 <img
-                  src="/assets/islamic_tv_media_banner.jpg"
+                  src={course?.bannerImage || '/assets/islamic_tv_media_banner.jpg'}
                   alt="Islamic TV Media Online Quran Madarsa Open Quran Classroom"
                   className="w-full h-auto object-cover"
                 />

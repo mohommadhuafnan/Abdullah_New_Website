@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Save, Check } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { SEO } from '../../components/common/SEO';
+import { ImageUploadInput } from '../../components/admin/ImageUploadInput';
 
 export const AdminProfilePage: React.FC = () => {
   const { profile, updateProfile } = useCMS();
@@ -177,17 +178,24 @@ export const AdminProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Profile Image URL */}
-        <div className="space-y-1.5">
-          <label htmlFor="prof-img" className="block text-xs font-bold text-slate-700">
-            Profile Image Path / URL
-          </label>
-          <input
+        {/* Profile & Hero Imagery */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+          <ImageUploadInput
             id="prof-img"
-            type="text"
+            label="Profile / Portrait Photo"
             value={formData.profileImage}
-            onChange={(e) => setFormData({ ...formData, profileImage: e.target.value, heroImage: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-700 outline-none"
+            onChange={(val) => setFormData({ ...formData, profileImage: val })}
+            helpText="Displayed on About page, author badges, and brand identity."
+            previewHeight="h-44"
+          />
+
+          <ImageUploadInput
+            id="hero-img"
+            label="Homepage Hero Background Banner"
+            value={formData.heroImage}
+            onChange={(val) => setFormData({ ...formData, heroImage: val })}
+            helpText="Full-screen cinematic executive background behind the homepage headline."
+            previewHeight="h-44"
           />
         </div>
 

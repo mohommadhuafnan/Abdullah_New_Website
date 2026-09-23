@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import type { Award as AwardType } from '../../types';
 import { SEO } from '../../components/common/SEO';
+import { ImageUploadInput } from '../../components/admin/ImageUploadInput';
 
 export const AdminAwardsPage: React.FC = () => {
   const { awards, addAward, updateAward, deleteAward, announce } = useCMS();
@@ -207,32 +208,24 @@ export const AdminAwardsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label htmlFor="aw-plaque-img" className="block text-xs font-bold text-slate-700">
-                Plaque Image Path
-              </label>
-              <input
-                id="aw-plaque-img"
-                type="text"
-                value={formData.plaqueImage}
-                onChange={(e) => setFormData({ ...formData, plaqueImage: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-700 outline-none"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <ImageUploadInput
+              id="aw-plaque-img"
+              label="Plaque / Trophy Image"
+              value={formData.plaqueImage}
+              onChange={(val) => setFormData({ ...formData, plaqueImage: val })}
+              helpText="Upload a photo of the award plaque or medal."
+              previewHeight="h-36"
+            />
 
-            <div className="space-y-1.5">
-              <label htmlFor="aw-cer-img" className="block text-xs font-bold text-slate-700">
-                Ceremony Stage Image Path
-              </label>
-              <input
-                id="aw-cer-img"
-                type="text"
-                value={formData.ceremonyImage}
-                onChange={(e) => setFormData({ ...formData, ceremonyImage: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-700 outline-none"
-              />
-            </div>
+            <ImageUploadInput
+              id="aw-cer-img"
+              label="Ceremony / Stage Image"
+              value={formData.ceremonyImage}
+              onChange={(val) => setFormData({ ...formData, ceremonyImage: val })}
+              helpText="Upload a stage or presentation ceremony photograph."
+              previewHeight="h-36"
+            />
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">

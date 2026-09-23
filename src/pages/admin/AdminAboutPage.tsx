@@ -2,15 +2,20 @@ import React, { useState } from 'react';
 import { Save, Check } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { SEO } from '../../components/common/SEO';
+import { ImageUploadInput } from '../../components/admin/ImageUploadInput';
 
 export const AdminAboutPage: React.FC = () => {
-  const { about, updateAbout } = useCMS();
+  const { about, updateAbout, profile, updateProfile } = useCMS();
   const [formData, setFormData] = useState({ ...about });
+  const [profileImg, setProfileImg] = useState(profile.profileImage || '/assets/Profile.jpeg');
   const [saved, setSaved] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateAbout(formData);
+    if (profileImg !== profile.profileImage) {
+      updateProfile({ ...profile, profileImage: profileImg });
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -39,6 +44,15 @@ export const AdminAboutPage: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        {/* About Page Narrative Portrait Image */}
+        <ImageUploadInput
+          id="abt-img"
+          label="About Narrative Portrait Photo"
+          value={profileImg}
+          onChange={(val) => setProfileImg(val)}
+          helpText="Official editorial portrait displayed alongside 'Who I Am' on the public About page."
+          previewHeight="h-48"
+        />
         {/* Who I Am */}
         <div className="space-y-1.5">
           <label htmlFor="abt-who" className="block text-xs font-bold text-slate-700">
