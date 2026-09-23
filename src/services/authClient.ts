@@ -51,13 +51,26 @@ export const AuthClient = {
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
         credentials: 'include',
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = {};
+      }
       if (!res.ok) {
         return { success: false, message: data.error || 'Failed to send verification code.', error: data.error };
       }
+      if (!text || Object.keys(data).length === 0) {
+        return {
+          success: false,
+          message: 'Backend server is not active on this host. On Render, please create a "Web Service" (Node.js) instead of a "Static Site" so the secure server and Resend API can run.',
+          error: 'Backend server not running',
+        };
+      }
       return { success: true, ...data };
     } catch {
-      return { success: false, message: 'Unable to contact the authentication service. Please try again.', error: 'Network error' };
+      return { success: false, message: 'Unable to contact the authentication service. Please verify server connection.', error: 'Network error' };
     }
   },
 
@@ -69,9 +82,22 @@ export const AuthClient = {
         body: JSON.stringify({ challengeId }),
         credentials: 'include',
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = {};
+      }
       if (!res.ok) {
-        return { success: false, message: data.error || 'Failed to resend verification code.', error: data.error };
+        return { success: false, message: data.message || data.error || 'Failed to resend verification code.', error: data.error };
+      }
+      if (!text || Object.keys(data).length === 0) {
+        return {
+          success: false,
+          message: 'Backend server is not active on this host. Deploy as a Render Web Service (Node.js).',
+          error: 'Backend server not running',
+        };
       }
       return { success: true, ...data };
     } catch {
@@ -87,9 +113,22 @@ export const AuthClient = {
         body: JSON.stringify({ challengeId, otp: otp.trim() }),
         credentials: 'include',
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = {};
+      }
       if (!res.ok) {
-        return { success: false, message: data.error || 'Verification failed.', error: data.error };
+        return { success: false, message: data.message || data.error || 'Verification failed.', error: data.error };
+      }
+      if (!text || Object.keys(data).length === 0) {
+        return {
+          success: false,
+          message: 'Backend server is not active on this host. Deploy as a Render Web Service (Node.js).',
+          error: 'Backend server not running',
+        };
       }
       if (data.token) {
         setStoredToken(data.token);

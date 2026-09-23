@@ -85,7 +85,7 @@ export const AdminLoginPage: React.FC = () => {
         setOtp(['', '', '', '']);
         setSuccessMessage('A 4-digit verification code has been dispatched.');
       } else {
-        setError(res.error || res.message || 'Unable to start administrator verification.');
+        setError(res.message || res.error || 'Unable to start administrator verification.');
       }
     } catch {
       setError('Unable to contact the authentication service. Please try again.');
@@ -167,7 +167,7 @@ export const AdminLoginPage: React.FC = () => {
           navigate('/admin/dashboard', { replace: true });
         }, 600);
       } else {
-        setError(res.error || res.message || 'Incorrect verification code. Please try again.');
+        setError(res.message || res.error || 'Incorrect verification code. Please try again.');
         // Clear OTP boxes on error for quick retry
         setOtp(['', '', '', '']);
         otpInputsRef.current[0]?.focus();
@@ -195,7 +195,7 @@ export const AdminLoginPage: React.FC = () => {
         setSuccessMessage('A fresh verification code has been sent to your email.');
         otpInputsRef.current[0]?.focus();
       } else {
-        setError(res.error || res.message || 'Unable to resend code.');
+        setError(res.message || res.error || 'Unable to resend code.');
       }
     } catch {
       setError('Network error during resend. Please try again.');
