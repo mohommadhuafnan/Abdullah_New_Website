@@ -122,6 +122,14 @@ const createSessionToken = (email) => {
   return token;
 };
 
+const PRIMARY_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'mohommadhuafnan756@gmail.com').trim().toLowerCase();
+const RESEND_TEST_EMAIL = 'webcoder45@gmail.com';
+
+export const isAuthorizedAdmin = (email) => {
+  const norm = normalizeEmail(email);
+  return norm === PRIMARY_ADMIN_EMAIL || norm === RESEND_TEST_EMAIL;
+};
+
 // 1. REQUEST OTP
 export const requestOtp = async ({ email, ip }) => {
   const normalized = normalizeEmail(email);
@@ -145,7 +153,7 @@ export const requestOtp = async ({ email, ip }) => {
   }
 
   // If email is NOT authorized admin, return safe generic response
-  if (normalized !== ADMIN_EMAIL) {
+  if (!isAuthorizedAdmin(normalized)) {
     // Return safe generic response to prevent email enumeration
     return {
       status: 200,
@@ -180,11 +188,14 @@ export const requestOtp = async ({ email, ip }) => {
 
   // Send Email via Resend
   let emailSent = false;
+  let sentToAddress = normalized;
+  let deliveryMessage = 'A verification code has been sent to the authorized administrator email.';
+
   if (resend) {
     try {
-      await resend.emails.send({
+      const sendResult = await resend.emails.send({
         from: ADMIN_EMAIL_FROM,
-        to: ADMIN_EMAIL,
+        to: normalized,
         subject: 'Admin Login Verification Code',
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px 24px; background: #020617; color: #f8fafc; border-radius: 20px; border: 1px solid #1e293b;">
@@ -213,11 +224,81 @@ export const requestOtp = async ({ email, ip }) => {
         `,
         text: `Admin Login Verification\n\nYour administrator verification code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nIf you did not request this verification code, you can safely ignore this email.\nDo not share this code with anyone.`,
       });
-      emailSent = true;
+
+      if (sendResult.error) {
+        console.warn('[AUTH WARNING] Resend direct send error:', sendResult.error);
+        // If Resend blocked because free test sandbox only delivers to webcoder45@gmail.com
+        if (
+          sendResult.error.statusCode === 403 &&
+          (sendResult.error.message?.includes('webcoder45@gmail.com') || normalized !== RESEND_TEST_EMAIL)
+        ) {
+          console.log('[AUTH INFO] Resend sandbox mode active. Forwarding OTP to registered Resend account: webcoder45@gmail.com');
+          const fallbackResult = await resend.emails.send({
+            from: ADMIN_EMAIL_FROM,
+            to: RESEND_TEST_EMAIL,
+            subject: `[Admin OTP for ${normalized}] Verification Code`,
+            html: `
+              <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px 24px; background: #020617; color: #f8fafc; border-radius: 20px; border: 1px solid #1e293b;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">Admin Login Verification</h2>
+                  <p style="color: #10b981; font-size: 13px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">
+                    Al Hafeel A. A. M. Abdullah Platform
+                  </p>
+                </div>
+                
+                <div style="background: #0f172a; padding: 28px 20px; border-radius: 16px; text-align: center; border: 1px solid #334155; margin-bottom: 24px;">
+                  <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 16px 0;">Administrator OTP requested for <strong>${normalized}</strong>:</p>
+                  <div style="font-size: 40px; font-weight: 900; letter-spacing: 12px; color: #fbbf24; font-family: monospace; padding: 8px 0; background: #020617; border-radius: 12px; border: 1px dashed #f59e0b;">
+                    ${otp}
+                  </div>
+                  <p style="color: #94a3b8; font-size: 12px; margin: 16px 0 0 0;">
+                    ⏱️ This code will expire in <strong style="color: #f8fafc;">5 minutes</strong>.
+                  </p>
+                </div>
+                
+                <p style="color: #64748b; font-size: 12px; line-height: 1.6; text-align: center; margin: 0;">
+                  Delivered to ${RESEND_TEST_EMAIL} via Resend Sandbox test mode.<br/>
+                  <strong style="color: #ef4444;">Do not share this code with anyone.</strong>
+                </p>
+              </div>
+            `,
+            text: `Admin Login Verification\n\nAdmin OTP requested for: ${normalized}\nVerification code: ${otp}\nExpires in 5 minutes.\n\nDelivered to ${RESEND_TEST_EMAIL} via Resend Sandbox mode.`,
+          });
+
+          if (!fallbackResult.error) {
+            emailSent = true;
+            sentToAddress = RESEND_TEST_EMAIL;
+            deliveryMessage = `Code dispatched to your registered Resend email: ${RESEND_TEST_EMAIL} (Resend trial mode).`;
+          } else {
+            return {
+              status: 502,
+              body: {
+                error: fallbackResult.error.message || 'Failed to dispatch verification code.',
+                message: fallbackResult.error.message,
+              },
+            };
+          }
+        } else {
+          return {
+            status: 502,
+            body: {
+              error: sendResult.error.message || 'Failed to dispatch verification code.',
+              message: sendResult.error.message,
+            },
+          };
+        }
+      } else {
+        emailSent = true;
+      }
     } catch (err) {
       console.error('[AUTH ERROR] Failed to deliver OTP email via Resend:', err?.message || err);
-      // Fallback: If Resend domain is onboarding and recipient doesn't match account or fails,
-      // log notice without leaking OTP.
+      return {
+        status: 502,
+        body: {
+          error: 'Resend API network error. Unable to dispatch email.',
+          message: err?.message || 'Email service error.',
+        },
+      };
     }
   } else {
     console.warn('[AUTH WARNING] RESEND_API_KEY is not configured. Email could not be sent.');
@@ -227,9 +308,9 @@ export const requestOtp = async ({ email, ip }) => {
     status: 200,
     body: {
       success: true,
-      message: 'A verification code has been sent to the authorized administrator email.',
+      message: deliveryMessage,
       challengeId,
-      maskedEmail: maskEmail(normalized),
+      maskedEmail: maskEmail(sentToAddress),
       expiresIn: 300,
     },
   };
@@ -272,11 +353,14 @@ export const resendOtp = async ({ challengeId, ip }) => {
   challenge.expiresAt = now + 5 * 60 * 1000; // Reset 5 minutes
   challenge.attempts = 0; // Reset attempts for the new code
 
+  let sentToAddress = challenge.email;
+  let deliveryMessage = 'A new verification code has been dispatched.';
+
   if (resend) {
     try {
-      await resend.emails.send({
+      const sendResult = await resend.emails.send({
         from: ADMIN_EMAIL_FROM,
-        to: ADMIN_EMAIL,
+        to: challenge.email,
         subject: 'New Admin Login Verification Code',
         html: `
           <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #020617; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
@@ -290,8 +374,51 @@ export const resendOtp = async ({ challengeId, ip }) => {
         `,
         text: `Your new admin verification code is: ${newOtp}\nExpires in 5 minutes.`,
       });
+
+      if (sendResult.error) {
+        console.warn('[AUTH WARNING] Resend resend error:', sendResult.error);
+        if (
+          sendResult.error.statusCode === 403 &&
+          (sendResult.error.message?.includes('webcoder45@gmail.com') || challenge.email !== RESEND_TEST_EMAIL)
+        ) {
+          const fallbackResult = await resend.emails.send({
+            from: ADMIN_EMAIL_FROM,
+            to: RESEND_TEST_EMAIL,
+            subject: `[Admin OTP for ${challenge.email}] New Verification Code`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #020617; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
+                <h2 style="color: #ffffff; text-align: center; margin: 0 0 16px 0;">New Verification Code</h2>
+                <div style="background: #0f172a; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #334155;">
+                  <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 12px 0;">New administrator OTP for <strong>${challenge.email}</strong>:</p>
+                  <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #fbbf24; font-family: monospace;">${newOtp}</div>
+                  <p style="color: #94a3b8; font-size: 12px; margin: 12px 0 0 0;">Expires in 5 minutes.</p>
+                </div>
+              </div>
+            `,
+            text: `New admin verification code for ${challenge.email}: ${newOtp}\nExpires in 5 minutes.`,
+          });
+          if (!fallbackResult.error) {
+            sentToAddress = RESEND_TEST_EMAIL;
+            deliveryMessage = `New code dispatched to your registered Resend email: ${RESEND_TEST_EMAIL} (Resend trial mode).`;
+          } else {
+            return {
+              status: 502,
+              body: { error: fallbackResult.error.message || 'Failed to resend verification code.' },
+            };
+          }
+        } else {
+          return {
+            status: 502,
+            body: { error: sendResult.error.message || 'Failed to resend verification code.' },
+          };
+        }
+      }
     } catch (err) {
       console.error('[AUTH ERROR] Resend error during resend:', err?.message || err);
+      return {
+        status: 502,
+        body: { error: 'Unable to deliver new verification code.' },
+      };
     }
   }
 
@@ -299,7 +426,7 @@ export const resendOtp = async ({ challengeId, ip }) => {
     status: 200,
     body: {
       success: true,
-      message: 'A new verification code has been sent.',
+      message: deliveryMessage,
       expiresIn: 300,
     },
   };
