@@ -153,6 +153,11 @@ export const setSmtpTransporterForTesting = (transporter) => {
   cachedTransporter = transporter;
 };
 
+// Custom IPv4 lookup function to force getaddrinfo to return AF_INET (IPv4) only
+const ipv4Lookup = (hostname, options, callback) => {
+  return dns.lookup(hostname, { family: 4 }, callback);
+};
+
 export const getSmtpTransporter = () => {
   const user = (process.env.SMTP_USER || '').trim();
   const pass = (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || '').replace(/\s+/g, '');
@@ -166,7 +171,7 @@ export const getSmtpTransporter = () => {
       host: host.includes('gmail') ? 'smtp.gmail.com' : host,
       port,
       secure: port === 465,
-      family: 4, // Strict IPv4 to avoid IPv6 ENETUNREACH in cloud containers
+      lookup: ipv4Lookup,
       auth: { user, pass },
       connectionTimeout: 15000,
       greetingTimeout: 15000,
@@ -198,7 +203,7 @@ export const sendAdminOtpEmail = async (email, otp) => {
       <p style="color: #ef4444; font-size: 13px;">Do not share this code with anyone.</p>
       <p style="color: #64748b; font-size: 12px; margin-top: 24px;">If you did not request this code, you can safely ignore this email.</p>
       <hr style="border: none; border-top: 1px solid #1e293b; margin: 20px 0;" />
-      <p style="color: #94a3b8; font-size: 12px; margin-0;">Regards,<br/>Admin Security System</p>
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Regards,<br/>Admin Security System</p>
     </div>
   `;
 
@@ -222,7 +227,7 @@ export const sendAdminOtpEmail = async (email, otp) => {
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
-        family: 4,
+        lookup: ipv4Lookup,
         auth: { user, pass },
         connectionTimeout: 15000,
         socketTimeout: 20000,
