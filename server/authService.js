@@ -1,6 +1,12 @@
 import crypto from 'node:crypto';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import dns from 'node:dns';
+
+// Force IPv4-first DNS order to prevent IPv6 ENETUNREACH on Linux containers (Render/Docker)
+if (dns && dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 dotenv.config();
 
@@ -156,25 +162,16 @@ export const getSmtpTransporter = () => {
   if (!user || !pass) return null;
 
   if (!cachedTransporter) {
-    if (host.includes('gmail.com')) {
-      cachedTransporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user, pass },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-      });
-    } else {
-      cachedTransporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-      });
-    }
+    cachedTransporter = nodemailer.createTransport({
+      host: host.includes('gmail') ? 'smtp.gmail.com' : host,
+      port,
+      secure: port === 465,
+      family: 4, // Strict IPv4 to avoid IPv6 ENETUNREACH in cloud containers
+      auth: { user, pass },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+    });
   }
   return cachedTransporter;
 };
@@ -201,7 +198,7 @@ export const sendAdminOtpEmail = async (email, otp) => {
       <p style="color: #ef4444; font-size: 13px;">Do not share this code with anyone.</p>
       <p style="color: #64748b; font-size: 12px; margin-top: 24px;">If you did not request this code, you can safely ignore this email.</p>
       <hr style="border: none; border-top: 1px solid #1e293b; margin: 20px 0;" />
-      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Regards,<br/>Admin Security System</p>
+      <p style="color: #94a3b8; font-size: 12px; margin-0;">Regards,<br/>Admin Security System</p>
     </div>
   `;
 
@@ -220,14 +217,15 @@ export const sendAdminOtpEmail = async (email, otp) => {
   } catch (err) {
     console.warn('[AUTH SMTP] Primary delivery attempt failed:', err?.message || err);
     if (user && pass) {
-      console.log('[AUTH SMTP] Retrying via direct Gmail SSL (port 465)...');
+      console.log('[AUTH SMTP] Retrying via direct Gmail SSL (port 465, IPv4)...');
       const fallbackTransporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
+        family: 4,
         auth: { user, pass },
-        connectionTimeout: 10000,
-        socketTimeout: 15000,
+        connectionTimeout: 15000,
+        socketTimeout: 20000,
       });
       await fallbackTransporter.sendMail(mailOptions);
       cachedTransporter = fallbackTransporter;
