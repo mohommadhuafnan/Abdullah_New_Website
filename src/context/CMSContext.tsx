@@ -63,7 +63,7 @@ interface CMSContextType {
   adminEmail: string | null;
   isAuthChecking: boolean;
   requestOtp: (email: string) => Promise<{ success: boolean; message: string; challengeId?: string; maskedEmail?: string; expiresIn?: number; error?: string }>;
-  verifyOtp: (challengeId: string, otp: string) => Promise<{ success: boolean; message: string; error?: string }>;
+  verifyOtp: (challengeId: string, otp: string, email?: string) => Promise<{ success: boolean; message: string; error?: string }>;
   resendOtp: (challengeId: string) => Promise<{ success: boolean; message: string; expiresIn?: number; error?: string }>;
   logout: () => Promise<void>;
   checkSession: () => Promise<boolean>;
@@ -375,8 +375,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return res;
   };
 
-  const verifyOtp = async (challengeId: string, otp: string) => {
-    const res = await AuthClient.verifyOtp(challengeId, otp);
+  const verifyOtp = async (challengeId: string, otp: string, email?: string) => {
+    const res = await AuthClient.verifyOtp(challengeId, otp, email);
     if (res.success) {
       setIsAdmin(true);
       setAdminEmail(res.email || null);

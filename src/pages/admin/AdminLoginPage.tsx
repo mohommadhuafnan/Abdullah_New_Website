@@ -160,7 +160,7 @@ export const AdminLoginPage: React.FC = () => {
     announce('Verifying administrator code...');
 
     try {
-      const res = await verifyOtp(challengeId, fullCode);
+      const res = await verifyOtp(challengeId, fullCode, email.trim().toLowerCase());
       if (res.success) {
         setSuccessMessage('Code verified! Entering admin dashboard...');
         setTimeout(() => {
@@ -210,7 +210,7 @@ export const AdminLoginPage: React.FC = () => {
       className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden"
     >
       <SEO
-        title="Admin Sign In"
+        title="Admin Login"
         description="Secure passwordless OTP administration access for Al Hafeel Abdullah."
       />
 
@@ -239,7 +239,7 @@ export const AdminLoginPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight">
-              Admin Sign In
+              Admin Login
             </h1>
             <p className="text-xs sm:text-sm text-emerald-400 font-medium mt-0.5">
               Secure administrator access
@@ -281,7 +281,7 @@ export const AdminLoginPage: React.FC = () => {
                 htmlFor="admin-email"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-300"
               >
-                ADMINISTRATOR EMAIL <span className="text-red-400">*</span>
+                Email Address <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <input
@@ -346,7 +346,7 @@ export const AdminLoginPage: React.FC = () => {
                 </button>
               </div>
               <p className="text-xs text-slate-400">
-                We sent a 4-digit verification code to:
+                A verification code has been sent to:
               </p>
               <div className="text-xs font-mono font-bold text-amber-300 pt-0.5 break-all">
                 {maskedEmail}
@@ -397,7 +397,7 @@ export const AdminLoginPage: React.FC = () => {
               <div>
                 {resendCooldown > 0 ? (
                   <span className="text-slate-500 text-[11px]">
-                    Resend in {resendCooldown}s
+                    Resend code in {resendCooldown} seconds
                   </span>
                 ) : (
                   <button
@@ -412,7 +412,7 @@ export const AdminLoginPage: React.FC = () => {
                         <span>Sending...</span>
                       </>
                     ) : (
-                      <span>Didn't receive code? Resend</span>
+                      <span>Resend Code</span>
                     )}
                   </button>
                 )}
@@ -432,7 +432,7 @@ export const AdminLoginPage: React.FC = () => {
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4 text-emerald-300" aria-hidden="true" />
-                  <span>Verify & Sign In</span>
+                  <span>Verify & Continue</span>
                 </>
               )}
             </button>

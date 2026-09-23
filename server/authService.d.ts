@@ -1,7 +1,11 @@
 export function normalizeEmail(email: string): string;
 export function maskEmail(email: string): string;
+export function getAuthorizedAdminEmails(): string[];
+export function isAuthorizedAdmin(email: string): boolean;
+export function sendAdminOtpEmail(email: string, otp: string): Promise<void>;
 export function requestOtp(args: { email?: string; ip: string }): Promise<{ status: number; body: any }>;
 export function resendOtp(args: { challengeId?: string; ip: string }): Promise<{ status: number; body: any }>;
-export function verifyOtp(args: { challengeId?: string; otp: string; ip: string }): Promise<{ status: number; body: any; token?: string }>;
+export function verifyOtp(args: { challengeId?: string; otp: string; email?: string; ip: string }): Promise<{ status: number; body: any; token?: string }>;
 export function verifySession(token: string | null): { authenticated: boolean; email?: string };
+export function requireAdmin(req: any, res: any, next: any): any;
 export function logoutSession(token: string | null): boolean;

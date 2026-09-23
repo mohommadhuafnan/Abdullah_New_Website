@@ -105,12 +105,16 @@ export const AuthClient = {
     }
   },
 
-  async verifyOtp(challengeId: string, otp: string): Promise<VerifyOtpResponse> {
+  async verifyOtp(challengeId: string, otp: string, email?: string): Promise<VerifyOtpResponse> {
     try {
       const res = await fetch('/api/admin/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId, otp: otp.trim() }),
+        body: JSON.stringify({
+          challengeId,
+          otp: otp.trim(),
+          ...(email ? { email: email.trim().toLowerCase() } : {}),
+        }),
         credentials: 'include',
       });
       const text = await res.text();

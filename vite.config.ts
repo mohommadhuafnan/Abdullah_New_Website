@@ -99,7 +99,7 @@ export default defineConfig({
 
             if (url === '/api/admin/auth/verify-otp' && req.method === 'POST') {
               const body = await readJsonBody();
-              const result = await verifyOtp({ challengeId: body.challengeId, otp: body.otp || '', ip });
+              const result = await verifyOtp({ challengeId: body.challengeId, otp: body.otp || '', email: body.email, ip });
               if (result.token) {
                 res.setHeader(
                   'Set-Cookie',

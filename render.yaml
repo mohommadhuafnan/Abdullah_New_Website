@@ -5,15 +5,15 @@ services:
     buildCommand: npm run build
     startCommand: npm start
     envVars:
-      - key: ADMIN_EMAIL
-        value: mohommadhuafnan756@gmail.com
+      - key: ADMIN_EMAILS
+        value: mohommadhuafnan756@gmail.com,aamabdullah441@gmail.com
       - key: SESSION_SECRET
         generateValue: true
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
-        value: "465"
+        value: "587"
       - key: SMTP_USER
         sync: false
-      - key: SMTP_PASS
+      - key: SMTP_PASSWORD
         sync: false

@@ -4,29 +4,37 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const PRIMARY_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'mohommadhuafnan756@gmail.com').trim().toLowerCase();
 const SESSION_SECRET = process.env.SESSION_SECRET || 'abdullah-secure-session-secret-key-2026';
 
-// SMTP Configuration (Gmail or standard SMTP)
-const SMTP_USER = (process.env.SMTP_USER || '').trim();
-const SMTP_PASS = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
-const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
-const SMTP_FROM = process.env.SMTP_FROM || (SMTP_USER ? `"Al Hafeel Abdullah Admin" <${SMTP_USER}>` : '');
+// --------------------------------------------------------------------------
+// 1. Authorized Emails Allowlist
+// --------------------------------------------------------------------------
+export const getAuthorizedAdminEmails = () => {
+  const list = [];
+  if (process.env.ADMIN_EMAILS) {
+    list.push(...process.env.ADMIN_EMAILS.split(','));
+  }
+  if (process.env.ADMIN_EMAIL) {
+    list.push(...process.env.ADMIN_EMAIL.split(','));
+  }
+  if (list.length === 0) {
+    list.push('mohommadhuafnan756@gmail.com', 'aamabdullah441@gmail.com');
+  }
+  return [...new Set(list.map((e) => e.trim().toLowerCase()).filter(Boolean))];
+};
 
-// In-Memory Storage for Challenges & Sessions
-// Cleaned up every 5 minutes
-const challenges = new Map();
-const activeSessions = new Map();
-const rateLimits = new Map();
-
-// Helper: Normalize email
 export const normalizeEmail = (email) => {
   if (typeof email !== 'string') return '';
   return email.trim().toLowerCase();
 };
 
-// Helper: Mask email (e.g. mohommadhuafnan756@gmail.com -> m***************@gmail.com)
+export const isAuthorizedAdmin = (email) => {
+  const norm = normalizeEmail(email);
+  if (!norm) return false;
+  const authorized = getAuthorizedAdminEmails();
+  return authorized.includes(norm);
+};
+
 export const maskEmail = (email) => {
   const norm = normalizeEmail(email);
   const parts = norm.split('@');
@@ -41,7 +49,14 @@ export const maskEmail = (email) => {
   return `${first}${masked}@${domain}`;
 };
 
-// Periodic cleanup
+// --------------------------------------------------------------------------
+// 2. In-Memory Store for OTP Challenges, Sessions, Rate Limits
+// --------------------------------------------------------------------------
+const challenges = new Map();
+const activeSessions = new Map();
+const rateLimits = new Map();
+
+// Periodic cleanup (every 60 seconds)
 setInterval(() => {
   const now = Date.now();
   for (const [id, challenge] of challenges.entries()) {
@@ -59,9 +74,9 @@ setInterval(() => {
       rateLimits.delete(key);
     }
   }
-}, 60 * 1000);
+}, 60 * 1000).unref();
 
-// Helper: Rate limiter
+// Rate limiter helper
 const checkRateLimit = (key, maxRequests, windowMs) => {
   const now = Date.now();
   let record = rateLimits.get(key);
@@ -77,7 +92,7 @@ const checkRateLimit = (key, maxRequests, windowMs) => {
   return { allowed: true, remaining: maxRequests - record.count };
 };
 
-// Helper: Hash OTP with challengeId and SESSION_SECRET
+// Cryptographic helpers
 const hashOtp = (challengeId, otp) => {
   return crypto
     .createHmac('sha256', SESSION_SECRET)
@@ -85,7 +100,6 @@ const hashOtp = (challengeId, otp) => {
     .digest('hex');
 };
 
-// Helper: Timing safe comparison
 const safeCompare = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
   const bufA = Buffer.from(a, 'hex');
@@ -94,7 +108,6 @@ const safeCompare = (a, b) => {
   return crypto.timingSafeEqual(bufA, bufB);
 };
 
-// Helper: Generate signed session token
 const createSessionToken = (email) => {
   const now = Date.now();
   const sessionId = crypto.randomUUID();
@@ -108,11 +121,10 @@ const createSessionToken = (email) => {
     .createHmac('sha256', SESSION_SECRET)
     .update(encodedPayload)
     .digest('base64url');
-  
+
   const token = `${encodedPayload}.${signature}`;
 
-  // Store in active sessions map
-  // Idle timeout = 30 minutes, absolute timeout = 8 hours
+  // Store in active sessions: 30 minutes idle, 8 hours absolute
   activeSessions.set(sessionId, {
     sessionId,
     email,
@@ -124,86 +136,85 @@ const createSessionToken = (email) => {
   return token;
 };
 
-export const isAuthorizedAdmin = (email) => {
-  const norm = normalizeEmail(email);
-  return norm === PRIMARY_ADMIN_EMAIL;
+// Export internal state for security test suite
+export const _getChallengeForTesting = (id) => challenges.get(id);
+export const _getActiveSessionForTesting = (id) => activeSessions.get(id);
+export const _clearRateLimitsForTesting = () => { rateLimits.clear(); };
+
+let cachedTransporter = null;
+
+export const setSmtpTransporterForTesting = (transporter) => {
+  cachedTransporter = transporter;
 };
 
-// Email Dispatcher (Direct SMTP via Nodemailer)
-export const dispatchOtpEmail = async ({ toEmail, otp, isResend = false }) => {
-  const subject = isResend ? 'New Admin Verification Code' : 'Admin Login Verification Code';
-  const html = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px 24px; background: #020617; color: #f8fafc; border-radius: 20px; border: 1px solid #1e293b;">
-      <div style="text-align: center; margin-bottom: 24px;">
-        <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">Admin Login Verification</h2>
-        <p style="color: #10b981; font-size: 13px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">
-          Al Hafeel A. A. M. Abdullah Platform
-        </p>
-      </div>
-      
-      <div style="background: #0f172a; padding: 28px 20px; border-radius: 16px; text-align: center; border: 1px solid #334155; margin-bottom: 24px;">
-        <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 16px 0;">Your administrator verification code is:</p>
-        <div style="font-size: 40px; font-weight: 900; letter-spacing: 12px; color: #fbbf24; font-family: monospace; padding: 8px 0; background: #020617; border-radius: 12px; border: 1px dashed #f59e0b;">
-          ${otp}
-        </div>
-        <p style="color: #94a3b8; font-size: 12px; margin: 16px 0 0 0;">
-          ⏱️ This code will expire in <strong style="color: #f8fafc;">5 minutes</strong>.
-        </p>
-      </div>
-      
-      <p style="color: #64748b; font-size: 12px; line-height: 1.6; text-align: center; margin: 0;">
-        If you did not request this verification code, you can safely ignore this email.<br/>
-        <strong style="color: #ef4444;">Do not share this code with anyone.</strong>
-      </p>
-    </div>
-  `;
-  const text = `Admin Login Verification\n\nYour administrator verification code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nIf you did not request this verification code, you can safely ignore this email.\nDo not share this code with anyone.`;
+export const getSmtpTransporter = () => {
+  const user = (process.env.SMTP_USER || '').trim();
+  const pass = (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || '').replace(/\s+/g, '');
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const secure = port === 465;
 
-  // Dispatch via Nodemailer SMTP (e.g. Gmail App Password)
-  if (SMTP_USER && SMTP_PASS) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: SMTP_PORT,
-        secure: SMTP_PORT === 465,
-        auth: {
-          user: SMTP_USER,
-          pass: SMTP_PASS,
-        },
-      });
+  if (!user || !pass) return null;
 
-      await transporter.sendMail({
-        from: SMTP_FROM || `"Al Hafeel Abdullah Admin" <${SMTP_USER}>`,
-        to: toEmail,
-        subject,
-        html,
-        text,
-      });
+  if (!cachedTransporter) {
+    cachedTransporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+    });
+  }
+  return cachedTransporter;
+};
 
-      console.log(`[AUTH SUCCESS] OTP email dispatched via SMTP (${SMTP_HOST}) directly to: ${toEmail}`);
-      return {
-        success: true,
-        sentToAddress: toEmail,
-        deliveryMessage: `Verification code sent directly to ${toEmail}.`,
-      };
-    } catch (smtpErr) {
-      console.error('[AUTH ERROR] SMTP dispatch failed:', smtpErr?.message || smtpErr);
-      return {
-        success: false,
-        error: `SMTP delivery failed: ${smtpErr?.message || 'Check your SMTP credentials'}`,
-      };
-    }
+export const sendAdminOtpEmail = async (email, otp) => {
+  const transporter = getSmtpTransporter();
+  if (!transporter) {
+    throw new Error('Email service is not configured. Please set SMTP_USER and SMTP_PASSWORD.');
   }
 
-  return {
-    success: false,
-    error: 'Email service is not configured. Please set SMTP_USER and SMTP_PASS in your environment.',
-  };
+  const sender = process.env.SMTP_FROM || `"Admin Security System" <${process.env.SMTP_USER}>`;
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px 24px; background: #020617; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
+      <h2 style="color: #ffffff; margin-top: 0; font-size: 20px;">Admin Login Verification Code</h2>
+      <p style="color: #cbd5e1; font-size: 14px; line-height: 1.5;">Hello,</p>
+      <p style="color: #cbd5e1; font-size: 14px; line-height: 1.5;">Your Admin Dashboard verification code is:</p>
+      <div style="font-size: 38px; font-weight: 800; letter-spacing: 10px; color: #10b981; font-family: monospace; padding: 16px 0; text-align: center; background: #0f172a; border-radius: 12px; margin: 20px 0; border: 1px dashed #059669;">
+        ${otp}
+      </div>
+      <p style="color: #cbd5e1; font-size: 13px;">This code will expire in <strong>5 minutes</strong>.</p>
+      <p style="color: #ef4444; font-size: 13px;">Do not share this code with anyone.</p>
+      <p style="color: #64748b; font-size: 12px; margin-top: 24px;">If you did not request this code, you can safely ignore this email.</p>
+      <hr style="border: none; border-top: 1px solid #1e293b; margin: 20px 0;" />
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Regards,<br/>Admin Security System</p>
+    </div>
+  `;
+
+  const text = `Hello,\n\nYour Admin Dashboard verification code is:\n\n${otp}\n\nThis code will expire in 5 minutes.\n\nDo not share this code with anyone.\n\nIf you did not request this code, you can safely ignore this email.\n\nRegards,\nAdmin Security System`;
+
+  await transporter.sendMail({
+    from: sender,
+    to: email,
+    subject: 'Admin Login Verification Code',
+    html,
+    text,
+  });
 };
 
-// 1. REQUEST OTP
+// --------------------------------------------------------------------------
+// 4. STEP 1: REQUEST OTP
+// --------------------------------------------------------------------------
 export const requestOtp = async ({ email, ip }) => {
   const normalized = normalizeEmail(email);
+
+  // Validate email format
+  if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+    return {
+      status: 400,
+      body: { error: 'Please enter a valid email address.' },
+    };
+  }
 
   // Rate limit by IP (10 requests per 15 mins)
   const ipLimit = checkRateLimit(`req_ip_${ip}`, 10, 15 * 60 * 1000);
@@ -223,16 +234,16 @@ export const requestOtp = async ({ email, ip }) => {
     };
   }
 
-  // If email is NOT authorized admin, return safe generic response
+  // If email is NOT authorized admin, return safe generic response to prevent enumeration
   if (!isAuthorizedAdmin(normalized)) {
-    // Return safe generic response to prevent email enumeration
     return {
       status: 200,
       body: {
         success: true,
         message: 'If the email is authorized, a verification code has been sent.',
         challengeId: crypto.randomUUID(), // fake challenge id
-        maskedEmail: maskEmail(normalized || 'administrator'),
+        maskedEmail: maskEmail(normalized),
+        expiresIn: 300,
       },
     };
   }
@@ -257,19 +268,17 @@ export const requestOtp = async ({ email, ip }) => {
     used: false,
   });
 
-  // Dispatch Email via Nodemailer (SMTP / Gmail) or Resend
-  const dispatchResult = await dispatchOtpEmail({
-    toEmail: normalized,
-    otp,
-    isResend: false,
-  });
-
-  if (!dispatchResult.success) {
+  // Dispatch OTP email through Gmail SMTP
+  try {
+    await sendAdminOtpEmail(normalized, otp);
+  } catch (err) {
+    console.error('[AUTH ERROR] Failed to deliver OTP email:', err?.message || err);
+    challenges.delete(challengeId);
     return {
       status: 502,
       body: {
-        error: dispatchResult.error || 'Failed to dispatch verification code.',
-        message: dispatchResult.error || 'Unable to deliver verification code.',
+        error: 'Unable to send the verification code. Please try again later.',
+        message: 'Unable to send the verification code. Please try again later.',
       },
     };
   }
@@ -278,15 +287,17 @@ export const requestOtp = async ({ email, ip }) => {
     status: 200,
     body: {
       success: true,
-      message: dispatchResult.deliveryMessage,
+      message: `A verification code has been sent to ${maskEmail(normalized)}.`,
       challengeId,
-      maskedEmail: maskEmail(dispatchResult.sentToAddress || normalized),
+      maskedEmail: maskEmail(normalized),
       expiresIn: 300,
     },
   };
 };
 
-// 2. RESEND OTP
+// --------------------------------------------------------------------------
+// 5. STEP 2: RESEND OTP
+// --------------------------------------------------------------------------
 export const resendOtp = async ({ challengeId, ip }) => {
   // Rate limit by IP
   const ipLimit = checkRateLimit(`resend_ip_${ip}`, 10, 15 * 60 * 1000);
@@ -312,7 +323,7 @@ export const resendOtp = async ({ challengeId, ip }) => {
     const waitSeconds = Math.ceil((60 * 1000 - timeSinceLastSent) / 1000);
     return {
       status: 429,
-      body: { error: `Please wait ${waitSeconds} seconds before requesting a new code.` },
+      body: { error: `Please wait ${waitSeconds} seconds before requesting another code.` },
     };
   }
 
@@ -323,18 +334,14 @@ export const resendOtp = async ({ challengeId, ip }) => {
   challenge.expiresAt = now + 5 * 60 * 1000; // Reset 5 minutes
   challenge.attempts = 0; // Reset attempts for the new code
 
-  const dispatchResult = await dispatchOtpEmail({
-    toEmail: challenge.email,
-    otp: newOtp,
-    isResend: true,
-  });
-
-  if (!dispatchResult.success) {
+  try {
+    await sendAdminOtpEmail(challenge.email, newOtp);
+  } catch (err) {
+    console.error('[AUTH ERROR] Failed to resend OTP email:', err?.message || err);
     return {
       status: 502,
       body: {
-        error: dispatchResult.error || 'Failed to resend verification code.',
-        message: dispatchResult.error || 'Unable to deliver new verification code.',
+        error: 'Unable to deliver new verification code. Please try again later.',
       },
     };
   }
@@ -343,14 +350,16 @@ export const resendOtp = async ({ challengeId, ip }) => {
     status: 200,
     body: {
       success: true,
-      message: dispatchResult.deliveryMessage,
+      message: 'A new verification code has been sent.',
       expiresIn: 300,
     },
   };
 };
 
-// 3. VERIFY OTP
-export const verifyOtp = async ({ challengeId, otp, ip }) => {
+// --------------------------------------------------------------------------
+// 6. STEP 3: VERIFY OTP (Bound to Email)
+// --------------------------------------------------------------------------
+export const verifyOtp = async ({ challengeId, otp, email, ip }) => {
   // Rate limit by IP
   const ipLimit = checkRateLimit(`verify_ip_${ip}`, 30, 15 * 60 * 1000);
   if (!ipLimit.allowed) {
@@ -375,7 +384,7 @@ export const verifyOtp = async ({ challengeId, otp, ip }) => {
   if (!challenge || challenge.used) {
     return {
       status: 400,
-      body: { error: 'Verification session is invalid or has already been used. Please request a new code.' },
+      body: { error: 'This verification code has already been used or is invalid. Please request a new code.' },
     };
   }
 
@@ -389,12 +398,24 @@ export const verifyOtp = async ({ challengeId, otp, ip }) => {
     };
   }
 
+  // EMAIL BINDING: Verify OTP challenge belongs to the same email address
+  if (email) {
+    const normalizedEmail = normalizeEmail(email);
+    if (normalizedEmail !== challenge.email) {
+      return {
+        status: 401,
+        body: { error: 'Authentication denied. Verification code does not match this email address.' },
+      };
+    }
+  }
+
   // Check attempt limits (max 5)
   if (challenge.attempts >= challenge.maxAttempts) {
+    challenge.used = true;
     challenges.delete(challengeId);
     return {
       status: 429,
-      body: { error: 'Too many verification attempts. Please request a new code.' },
+      body: { error: 'Too many attempts. Please request a new verification code.' },
     };
   }
 
@@ -407,15 +428,16 @@ export const verifyOtp = async ({ challengeId, otp, ip }) => {
   if (!isMatch) {
     const remaining = challenge.maxAttempts - challenge.attempts;
     if (remaining <= 0) {
+      challenge.used = true;
       challenges.delete(challengeId);
       return {
         status: 429,
-        body: { error: 'Too many incorrect attempts. This code has been deactivated. Please request a new code.' },
+        body: { error: 'Too many attempts. Please request a new verification code.' },
       };
     }
     return {
       status: 400,
-      body: { error: `Incorrect verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.` },
+      body: { error: `Invalid verification code. Please try again. (${remaining} attempt${remaining === 1 ? '' : 's'} remaining)` },
     };
   }
 
@@ -430,14 +452,16 @@ export const verifyOtp = async ({ challengeId, otp, ip }) => {
     status: 200,
     body: {
       success: true,
-      message: 'Authentication successful. Redirecting to dashboard...',
+      message: 'Authentication successful. Welcome to the admin dashboard.',
       email: challenge.email,
     },
     token,
   };
 };
 
-// 4. VERIFY SESSION
+// --------------------------------------------------------------------------
+// 7. STEP 4: VERIFY SESSION
+// --------------------------------------------------------------------------
 export const verifySession = (token) => {
   if (!token || typeof token !== 'string') {
     return { authenticated: false };
@@ -466,6 +490,12 @@ export const verifySession = (token) => {
       return { authenticated: false };
     }
 
+    // Verify admin email is still in allowlist
+    if (!isAuthorizedAdmin(session.email)) {
+      activeSessions.delete(payload.sessionId);
+      return { authenticated: false };
+    }
+
     const now = Date.now();
     // Check absolute expiration (8 hours)
     if (session.absoluteExpiresAt < now) {
@@ -491,7 +521,30 @@ export const verifySession = (token) => {
   }
 };
 
-// 5. LOGOUT
+// --------------------------------------------------------------------------
+// 8. Centralized Server Authorization Middleware: requireAdmin
+// --------------------------------------------------------------------------
+export const requireAdmin = (req, res, next) => {
+  const token =
+    req.cookies?.admin_session ||
+    req.headers['authorization']?.replace('Bearer ', '') ||
+    null;
+
+  const session = verifySession(token);
+  if (!session.authenticated) {
+    return res.status(401).json({
+      error: 'Unauthorized: Admin authentication required.',
+      authenticated: false,
+    });
+  }
+
+  req.admin = { email: session.email };
+  next();
+};
+
+// --------------------------------------------------------------------------
+// 9. LOGOUT SESSION
+// --------------------------------------------------------------------------
 export const logoutSession = (token) => {
   if (!token) return true;
   try {

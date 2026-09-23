@@ -6,8 +6,8 @@ export default async function handler(req, res) {
   }
 
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '127.0.0.1';
-  const { challengeId, otp } = req.body || {};
-  const result = await verifyOtp({ challengeId, otp, ip });
+  const { challengeId, otp, email } = req.body || {};
+  const result = await verifyOtp({ challengeId, otp, email, ip });
 
   if (result.token) {
     res.setHeader(

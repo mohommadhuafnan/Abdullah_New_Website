@@ -8,6 +8,7 @@ import {
   verifyOtp,
   resendOtp,
   verifySession,
+  requireAdmin,
   logoutSession,
 } from './authService.js';
 
@@ -23,7 +24,7 @@ const isProd = process.env.NODE_ENV === 'production';
 app.use(express.json());
 app.use(cookieParser());
 
-// Trust proxy for accurate IP determination behind Render / Vercel / Nginx
+// Trust proxy for accurate IP determination behind Render / Vercel / Cloudflare
 app.set('trust proxy', 1);
 
 // Helper to extract client IP
@@ -45,10 +46,10 @@ const getSessionToken = (req) => {
 };
 
 // ==========================================
-// AUTHENTICATION API ROUTES
+// 1. PUBLIC AUTHENTICATION API ROUTES
 // ==========================================
 
-// 1. POST /api/admin/auth/request-otp
+// POST /api/admin/auth/request-otp
 app.post('/api/admin/auth/request-otp', async (req, res) => {
   try {
     const { email } = req.body || {};
@@ -61,7 +62,7 @@ app.post('/api/admin/auth/request-otp', async (req, res) => {
   }
 });
 
-// 2. POST /api/admin/auth/resend-otp
+// POST /api/admin/auth/resend-otp
 app.post('/api/admin/auth/resend-otp', async (req, res) => {
   try {
     const { challengeId } = req.body || {};
@@ -74,12 +75,12 @@ app.post('/api/admin/auth/resend-otp', async (req, res) => {
   }
 });
 
-// 3. POST /api/admin/auth/verify-otp
+// POST /api/admin/auth/verify-otp (Bound to email)
 app.post('/api/admin/auth/verify-otp', async (req, res) => {
   try {
-    const { challengeId, otp } = req.body || {};
+    const { challengeId, otp, email } = req.body || {};
     const ip = getClientIp(req);
-    const result = await verifyOtp({ challengeId, otp, ip });
+    const result = await verifyOtp({ challengeId, otp, email, ip });
 
     if (result.token) {
       res.cookie('admin_session', result.token, {
@@ -89,7 +90,6 @@ app.post('/api/admin/auth/verify-otp', async (req, res) => {
         maxAge: 8 * 60 * 60 * 1000, // 8 hours
         path: '/',
       });
-      // Also return token in body for environments where cookies are restricted
       return res.status(result.status).json({
         ...result.body,
         token: result.token,
@@ -103,7 +103,7 @@ app.post('/api/admin/auth/verify-otp', async (req, res) => {
   }
 });
 
-// 4. GET /api/admin/auth/session
+// GET /api/admin/auth/session
 app.get('/api/admin/auth/session', (req, res) => {
   const token = getSessionToken(req);
   const session = verifySession(token);
@@ -112,11 +112,14 @@ app.get('/api/admin/auth/session', (req, res) => {
   }
   return res.status(200).json({
     authenticated: true,
+    admin: {
+      email: session.email,
+    },
     email: session.email,
   });
 });
 
-// 5. POST /api/admin/auth/logout
+// POST /api/admin/auth/logout
 app.post('/api/admin/auth/logout', (req, res) => {
   const token = getSessionToken(req);
   logoutSession(token);
@@ -125,17 +128,54 @@ app.post('/api/admin/auth/logout', (req, res) => {
 });
 
 // ==========================================
-// STATIC FILES & SPA FALLBACK (Production)
+// 2. SERVER-PROTECTED ADMIN API ROUTES
+// ==========================================
+// Middleware protecting all non-auth /api/admin/* endpoints
+app.use('/api/admin', (req, res, next) => {
+  if (req.path.startsWith('/auth')) {
+    return next();
+  }
+  return requireAdmin(req, res, next);
+});
+
+// Protected test endpoint: GET /api/admin/verify-access
+app.get('/api/admin/verify-access', (req, res) => {
+  return res.status(200).json({
+    authorized: true,
+    admin: req.admin,
+    message: 'Authorized admin access confirmed.',
+  });
+});
+
+// ==========================================
+// 3. SERVER-LEVEL ADMIN ROUTE PROTECTION
+// ==========================================
+// Protect /admin and /admin/* at the HTTP layer: redirect unauthenticated browser visits to /admin/login
+app.get(/^\/admin(\/.*)?$/, (req, res, next) => {
+  if (req.path === '/admin/login') {
+    return next();
+  }
+  const token = getSessionToken(req);
+  const session = verifySession(token);
+  if (!session.authenticated) {
+    return res.redirect('/admin/login');
+  }
+  next();
+});
+
+// ==========================================
+// 4. STATIC FILES & SPA FALLBACK (Production)
 // ==========================================
 const distPath = path.resolve(__dirname, '../dist');
 app.use(express.static(distPath));
 
 app.use((req, res, next) => {
-  // Let /api calls 404 naturally if unmatched
+  // Let unmatched /api routes return 404 JSON
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'API route not found' });
   }
-  // All other GET routes return index.html for React Router
+
+  // All other GET routes return index.html for React Router SPA
   if (req.method === 'GET') {
     return res.sendFile(path.join(distPath, 'index.html'));
   }
